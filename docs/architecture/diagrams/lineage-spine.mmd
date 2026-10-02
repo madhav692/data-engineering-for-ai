@@ -1,0 +1,20 @@
+%% The lineage spine: six entities, and the version each carries.
+%% Editable source; lineage-spine.svg is the hand-tuned export used by the article.
+%% Render: https://mermaid.live or `npx -y @mermaid-js/mermaid-cli -i lineage-spine.mmd -o preview.svg`
+flowchart LR
+  D["<b>Document</b><br/>doc_id (identity)<br/>content_sha256<br/>source_id, uri, acl"]
+  C["<b>Chunk</b><br/>chunk_id (derived)<br/>parser_version<br/>chunker_version"]
+  E["<b>Embedding</b><br/>chunk_id<br/>embedding_model_id<br/>vector[dims], job_id"]
+  I["<b>IndexSnapshot</b><br/>index_snapshot_id<br/>embedding_model_id<br/>lakehouse_snapshot_id"]
+  R["<b>Request</b><br/>request_id, tenant_id<br/>index_snapshot_id<br/>chunk_ids, llm_id"]
+  F["<b>Feedback</b><br/>feedback_id<br/>request_id<br/>kind, value, actor"]
+  V["<b>EvalRun</b><br/>run_id<br/>eval_set_id, version<br/>same keys as Request"]
+
+  D --> C --> E --> I
+  I -- "serving pins the snapshot it read" --> R
+  R --> F --> V
+
+  classDef entity fill:#ffffff,stroke:#c7c7c7,stroke-width:1.25px,color:#1f1f1f;
+  classDef join fill:#e8effd,stroke:#2563eb,stroke-width:2px,color:#1f1f1f;
+  class D,C,E,I,F,V entity;
+  class R join;
