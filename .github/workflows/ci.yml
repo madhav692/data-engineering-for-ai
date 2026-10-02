@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    name: contracts (lint, schema drift, tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install workspace
+        run: make setup
+
+      - name: Lint
+        run: make lint
+
+      - name: Generated schemas match the models
+        run: make check-schemas
+
+      - name: Contract tests
+        run: make test-contracts
