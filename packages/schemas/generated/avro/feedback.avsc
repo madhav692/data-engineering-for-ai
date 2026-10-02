@@ -1,0 +1,93 @@
+{
+  "type": "record",
+  "name": "Feedback",
+  "namespace": "cairn",
+  "doc": "A signal about one request. Evidence, never an approval to train.",
+  "fields": [
+    {
+      "name": "tenant_id",
+      "type": "string",
+      "doc": "Tenant that owns the row. Every index query and cost report filters on it."
+    },
+    {
+      "name": "created_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      },
+      "doc": "When this row was written (UTC, timezone-aware). Freshness is computed from it."
+    },
+    {
+      "name": "schema_version",
+      "type": "long",
+      "default": 1,
+      "doc": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md."
+    },
+    {
+      "name": "feedback_id",
+      "type": "string"
+    },
+    {
+      "name": "request_id",
+      "type": "string",
+      "doc": "Every signal joins to a request."
+    },
+    {
+      "name": "kind",
+      "type": {
+        "type": "enum",
+        "name": "FeedbackKind",
+        "symbols": [
+          "thumbs",
+          "rating",
+          "correction",
+          "dispute",
+          "click"
+        ]
+      }
+    },
+    {
+      "name": "value",
+      "type": "double",
+      "doc": "thumbs: -1 or 1; rating: 1-5; click: 1; others: 1."
+    },
+    {
+      "name": "comment",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "Required for corrections and disputes."
+    },
+    {
+      "name": "actor",
+      "type": {
+        "type": "enum",
+        "name": "FeedbackActor",
+        "symbols": [
+          "user",
+          "reviewer",
+          "judge"
+        ]
+      }
+    },
+    {
+      "name": "received_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      }
+    },
+    {
+      "name": "dedup_key",
+      "type": "string",
+      "doc": "Producer idempotency key; unique per tenant."
+    },
+    {
+      "name": "event_schema_version",
+      "type": "string",
+      "doc": "Version of the application's event schema that produced this row."
+    }
+  ]
+}

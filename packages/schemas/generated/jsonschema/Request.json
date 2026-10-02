@@ -1,0 +1,349 @@
+{
+  "$defs": {
+    "LlmParams": {
+      "additionalProperties": false,
+      "description": "Generation parameters; part of the lineage of every answer.",
+      "properties": {
+        "max_tokens": {
+          "minimum": 1,
+          "title": "Max Tokens",
+          "type": "integer"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Set when the provider honours seeds.",
+          "title": "Seed"
+        },
+        "temperature": {
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Temperature",
+          "type": "number"
+        },
+        "top_p": {
+          "default": 1.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Top P",
+          "type": "number"
+        }
+      },
+      "required": [
+        "temperature",
+        "max_tokens"
+      ],
+      "title": "LlmParams",
+      "type": "object"
+    },
+    "RetrievedChunk": {
+      "additionalProperties": false,
+      "description": "One retrieved chunk as the model saw it: identity, text identity, score, rank.",
+      "properties": {
+        "chunk_id": {
+          "pattern": "^chk_[0-9a-f]{32}$",
+          "title": "Chunk Id",
+          "type": "string"
+        },
+        "rank": {
+          "description": "1-based rank in the context, after reranking.",
+          "minimum": 1,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "score": {
+          "description": "Retrieval score after fusion, if any.",
+          "title": "Score",
+          "type": "number"
+        },
+        "text_sha256": {
+          "description": "Pins the exact text; chunk ids are content-addressed.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Text Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "chunk_id",
+        "text_sha256",
+        "score",
+        "rank"
+      ],
+      "title": "RetrievedChunk",
+      "type": "object"
+    },
+    "StageLatency": {
+      "additionalProperties": false,
+      "description": "Milliseconds per serving stage; the latency budget is checked against these (A19).",
+      "properties": {
+        "generate_ms": {
+          "minimum": 0,
+          "title": "Generate Ms",
+          "type": "integer"
+        },
+        "rerank_ms": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Rerank Ms",
+          "type": "integer"
+        },
+        "retrieve_ms": {
+          "minimum": 0,
+          "title": "Retrieve Ms",
+          "type": "integer"
+        },
+        "total_ms": {
+          "minimum": 0,
+          "title": "Total Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "retrieve_ms",
+        "generate_ms",
+        "total_ms"
+      ],
+      "title": "StageLatency",
+      "type": "object"
+    }
+  },
+  "$id": "https://cairn.dev/schemas/Request.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The request log: everything needed to replay a response from its request_id.\n\nWritten with every lineage id before the response is returned (or enqueued durably).\nHot copy in Postgres for 30 days, history in Iceberg.",
+  "properties": {
+    "cost_usd": {
+      "description": "Cost in USD at the price in force when the row was written.",
+      "minimum": 0,
+      "title": "Cost Usd",
+      "type": "number"
+    },
+    "created_at": {
+      "description": "When this row was written (UTC, timezone-aware). Freshness is computed from it.",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "embedding_model_id": {
+      "description": "Embedding model as provider/name@version:dims. The model is the namespace of every vector it produced; two models never share an index.",
+      "examples": [
+        "openai/text-embedding-3-small@2024-01:1536",
+        "baai/bge-base-en@1.5:768"
+      ],
+      "pattern": "^[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9][A-Za-z0-9._-]*:[1-9][0-9]*$",
+      "title": "Embedding Model Id",
+      "type": "string"
+    },
+    "filters": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Filters applied inside the index query (tenant, ACL, time); never after it.",
+      "title": "Filters",
+      "type": "object"
+    },
+    "index_snapshot_id": {
+      "description": "The exact index this request read.",
+      "pattern": "^idx_[0-9a-f]{32}$",
+      "title": "Index Snapshot Id",
+      "type": "string"
+    },
+    "latency": {
+      "$ref": "#/$defs/StageLatency"
+    },
+    "llm_id": {
+      "description": "A model reference as provider/name@version (LLMs, rerankers, judges).",
+      "examples": [
+        "anthropic/claude-sonnet-4-5@2025-09-29",
+        "cohere/rerank-v3.5@2024-12"
+      ],
+      "pattern": "^[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "title": "Llm Id",
+      "type": "string"
+    },
+    "llm_params": {
+      "$ref": "#/$defs/LlmParams"
+    },
+    "prompt_template_version": {
+      "description": "A version tag: letters, digits, dot, underscore, dash; 1-64 characters.",
+      "examples": [
+        "pymupdf-1.24.9",
+        "struct-v2",
+        "2026-10-02.1"
+      ],
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+      "title": "Prompt Template Version",
+      "type": "string"
+    },
+    "query_sha256": {
+      "description": "Always kept, even when query_text is not.",
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Query Sha256",
+      "type": "string"
+    },
+    "query_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The question, unless the tenant's PII policy forbids retention.",
+      "title": "Query Text"
+    },
+    "received_at": {
+      "description": "When the request arrived.",
+      "format": "date-time",
+      "title": "Received At",
+      "type": "string"
+    },
+    "request_id": {
+      "description": "Minted at the edge; UUIDv7.",
+      "pattern": "^req_[0-9a-f]{32}$",
+      "title": "Request Id",
+      "type": "string"
+    },
+    "reranker_id": {
+      "anyOf": [
+        {
+          "description": "A model reference as provider/name@version (LLMs, rerankers, judges).",
+          "examples": [
+            "anthropic/claude-sonnet-4-5@2025-09-29",
+            "cohere/rerank-v3.5@2024-12"
+          ],
+          "pattern": "^[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reranker Id"
+    },
+    "response_sha256": {
+      "description": "Always kept, even when response_text is not.",
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Response Sha256",
+      "type": "string"
+    },
+    "response_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The answer, unless the tenant's PII policy forbids retention.",
+      "title": "Response Text"
+    },
+    "retrieval_config_version": {
+      "description": "A version tag: letters, digits, dot, underscore, dash; 1-64 characters.",
+      "examples": [
+        "pymupdf-1.24.9",
+        "struct-v2",
+        "2026-10-02.1"
+      ],
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+      "title": "Retrieval Config Version",
+      "type": "string"
+    },
+    "retrieved_chunks": {
+      "description": "What the model saw, in context order.",
+      "items": {
+        "$ref": "#/$defs/RetrievedChunk"
+      },
+      "title": "Retrieved Chunks",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "description": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md.",
+      "minimum": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "error",
+        "timeout"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tenant_id": {
+      "description": "Tenant that owns the row. Every index query and cost report filters on it.",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Tenant Id",
+      "type": "string"
+    },
+    "tokens_in": {
+      "description": "Input tokens charged for this row.",
+      "minimum": 0,
+      "title": "Tokens In",
+      "type": "integer"
+    },
+    "tokens_out": {
+      "default": 0,
+      "description": "Output tokens charged for this row.",
+      "minimum": 0,
+      "title": "Tokens Out",
+      "type": "integer"
+    },
+    "trace_id": {
+      "description": "OpenTelemetry trace id; joins the request to its spans.",
+      "minLength": 1,
+      "title": "Trace Id",
+      "type": "string"
+    },
+    "user_id_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Keyed hash of the user id; never the raw id.",
+      "title": "User Id Hash"
+    }
+  },
+  "required": [
+    "tenant_id",
+    "created_at",
+    "tokens_in",
+    "cost_usd",
+    "request_id",
+    "received_at",
+    "query_sha256",
+    "prompt_template_version",
+    "retrieval_config_version",
+    "index_snapshot_id",
+    "embedding_model_id",
+    "llm_id",
+    "llm_params",
+    "response_sha256",
+    "latency",
+    "status",
+    "trace_id"
+  ],
+  "title": "Request",
+  "type": "object"
+}

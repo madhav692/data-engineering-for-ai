@@ -1,0 +1,186 @@
+{
+  "type": "record",
+  "name": "EvalRun",
+  "namespace": "cairn",
+  "doc": "One evaluation of one configuration against one version of one eval set.",
+  "fields": [
+    {
+      "name": "tenant_id",
+      "type": "string",
+      "doc": "Tenant that owns the row. Every index query and cost report filters on it."
+    },
+    {
+      "name": "created_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      },
+      "doc": "When this row was written (UTC, timezone-aware). Freshness is computed from it."
+    },
+    {
+      "name": "schema_version",
+      "type": "long",
+      "default": 1,
+      "doc": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md."
+    },
+    {
+      "name": "run_id",
+      "type": "string"
+    },
+    {
+      "name": "eval_set_id",
+      "type": "string",
+      "doc": "The golden set, e.g. 'cairn-core'."
+    },
+    {
+      "name": "eval_set_version",
+      "type": "string",
+      "doc": "Version of the golden set; sets are immutable."
+    },
+    {
+      "name": "config",
+      "type": {
+        "type": "record",
+        "name": "EvalConfig",
+        "namespace": "cairn",
+        "doc": "The versions an evaluation ran against: the same keys a Request carries.",
+        "fields": [
+          {
+            "name": "prompt_template_version",
+            "type": "string",
+            "doc": "A version tag: letters, digits, dot, underscore, dash; 1-64 characters."
+          },
+          {
+            "name": "retrieval_config_version",
+            "type": "string",
+            "doc": "A version tag: letters, digits, dot, underscore, dash; 1-64 characters."
+          },
+          {
+            "name": "index_snapshot_id",
+            "type": "string"
+          },
+          {
+            "name": "embedding_model_id",
+            "type": "string",
+            "doc": "Embedding model as provider/name@version:dims. The model is the namespace of every vector it produced; two models never share an index."
+          },
+          {
+            "name": "reranker_id",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "llm_id",
+            "type": "string",
+            "doc": "A model reference as provider/name@version (LLMs, rerankers, judges)."
+          },
+          {
+            "name": "llm_params",
+            "type": {
+              "type": "record",
+              "name": "LlmParams",
+              "namespace": "cairn",
+              "doc": "Generation parameters; part of the lineage of every answer.",
+              "fields": [
+                {
+                  "name": "temperature",
+                  "type": "double"
+                },
+                {
+                  "name": "max_tokens",
+                  "type": "long"
+                },
+                {
+                  "name": "top_p",
+                  "type": "double",
+                  "default": 1.0
+                },
+                {
+                  "name": "seed",
+                  "type": [
+                    "null",
+                    "long"
+                  ],
+                  "default": null,
+                  "doc": "Set when the provider honours seeds."
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "metrics",
+      "type": {
+        "type": "map",
+        "values": "double"
+      },
+      "default": {},
+      "doc": "e.g. recall_at_5, mrr, faithfulness, p95_ms."
+    },
+    {
+      "name": "baseline_run_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "The run this one is compared against."
+    },
+    {
+      "name": "git_sha",
+      "type": "string",
+      "doc": "Code version of the runner."
+    },
+    {
+      "name": "started_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      }
+    },
+    {
+      "name": "finished_at",
+      "type": [
+        "null",
+        {
+          "type": "long",
+          "logicalType": "timestamp-micros"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "EvalRunStatus",
+        "symbols": [
+          "running",
+          "succeeded",
+          "failed"
+        ]
+      }
+    },
+    {
+      "name": "tokens_in",
+      "type": "long",
+      "doc": "Input tokens charged for this row."
+    },
+    {
+      "name": "tokens_out",
+      "type": "long",
+      "default": 0,
+      "doc": "Output tokens charged for this row."
+    },
+    {
+      "name": "cost_usd",
+      "type": "double",
+      "doc": "Cost in USD at the price in force when the row was written."
+    }
+  ]
+}

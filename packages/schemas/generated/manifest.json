@@ -1,0 +1,117 @@
+[
+  {
+    "table": "documents",
+    "model": "Document",
+    "primary_key": [
+      "doc_id",
+      "revision"
+    ],
+    "lineage_fields": [
+      "content_sha256"
+    ],
+    "partition_by": [
+      "source_id",
+      "days(fetched_at)"
+    ],
+    "schema_version": 1,
+    "doc": "Registry entry: one row per (document, revision)."
+  },
+  {
+    "table": "chunks",
+    "model": "Chunk",
+    "primary_key": [
+      "chunk_id"
+    ],
+    "lineage_fields": [
+      "content_sha256",
+      "parser_version",
+      "chunker_version"
+    ],
+    "partition_by": [
+      "chunker_version",
+      "bucket(128, doc_id)"
+    ],
+    "schema_version": 1,
+    "doc": "A piece of a document version, cut by a versioned parser and chunker."
+  },
+  {
+    "table": "embeddings",
+    "model": "Embedding",
+    "primary_key": [
+      "chunk_id",
+      "embedding_model_id"
+    ],
+    "lineage_fields": [
+      "embedding_model_id"
+    ],
+    "partition_by": [
+      "embedding_model_id",
+      "bucket(128, chunk_id)"
+    ],
+    "schema_version": 1,
+    "doc": "A vector for one chunk under one embedding model."
+  },
+  {
+    "table": "index_snapshots",
+    "model": "IndexSnapshot",
+    "primary_key": [
+      "index_snapshot_id"
+    ],
+    "lineage_fields": [
+      "embedding_model_id",
+      "lakehouse_snapshot_id"
+    ],
+    "partition_by": [],
+    "schema_version": 1,
+    "doc": "One build of one index from one lakehouse snapshot under one model."
+  },
+  {
+    "table": "requests",
+    "model": "Request",
+    "primary_key": [
+      "request_id"
+    ],
+    "lineage_fields": [
+      "prompt_template_version",
+      "retrieval_config_version",
+      "index_snapshot_id",
+      "embedding_model_id",
+      "reranker_id",
+      "llm_id"
+    ],
+    "partition_by": [
+      "days(received_at)"
+    ],
+    "schema_version": 1,
+    "doc": "The request log: everything needed to replay a response from its request_id."
+  },
+  {
+    "table": "feedback",
+    "model": "Feedback",
+    "primary_key": [
+      "feedback_id"
+    ],
+    "lineage_fields": [
+      "event_schema_version"
+    ],
+    "partition_by": [
+      "days(received_at)"
+    ],
+    "schema_version": 1,
+    "doc": "A signal about one request. Evidence, never an approval to train."
+  },
+  {
+    "table": "eval_runs",
+    "model": "EvalRun",
+    "primary_key": [
+      "run_id"
+    ],
+    "lineage_fields": [
+      "eval_set_id",
+      "eval_set_version"
+    ],
+    "partition_by": [],
+    "schema_version": 1,
+    "doc": "One evaluation of one configuration against one version of one eval set."
+  }
+]

@@ -1,0 +1,248 @@
+{
+  "type": "record",
+  "name": "Request",
+  "namespace": "cairn",
+  "doc": "The request log: everything needed to replay a response from its request_id.",
+  "fields": [
+    {
+      "name": "tenant_id",
+      "type": "string",
+      "doc": "Tenant that owns the row. Every index query and cost report filters on it."
+    },
+    {
+      "name": "created_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      },
+      "doc": "When this row was written (UTC, timezone-aware). Freshness is computed from it."
+    },
+    {
+      "name": "schema_version",
+      "type": "long",
+      "default": 1,
+      "doc": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md."
+    },
+    {
+      "name": "request_id",
+      "type": "string",
+      "doc": "Minted at the edge; UUIDv7."
+    },
+    {
+      "name": "user_id_hash",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "Keyed hash of the user id; never the raw id."
+    },
+    {
+      "name": "received_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      },
+      "doc": "When the request arrived."
+    },
+    {
+      "name": "query_text",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "The question, unless the tenant's PII policy forbids retention."
+    },
+    {
+      "name": "query_sha256",
+      "type": "string",
+      "doc": "Always kept, even when query_text is not."
+    },
+    {
+      "name": "prompt_template_version",
+      "type": "string",
+      "doc": "A version tag: letters, digits, dot, underscore, dash; 1-64 characters."
+    },
+    {
+      "name": "retrieval_config_version",
+      "type": "string",
+      "doc": "A version tag: letters, digits, dot, underscore, dash; 1-64 characters."
+    },
+    {
+      "name": "index_snapshot_id",
+      "type": "string",
+      "doc": "The exact index this request read."
+    },
+    {
+      "name": "embedding_model_id",
+      "type": "string",
+      "doc": "Embedding model as provider/name@version:dims. The model is the namespace of every vector it produced; two models never share an index."
+    },
+    {
+      "name": "filters",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Filters applied inside the index query (tenant, ACL, time); never after it."
+    },
+    {
+      "name": "retrieved_chunks",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "RetrievedChunk",
+          "namespace": "cairn",
+          "doc": "One retrieved chunk as the model saw it: identity, text identity, score, rank.",
+          "fields": [
+            {
+              "name": "chunk_id",
+              "type": "string"
+            },
+            {
+              "name": "text_sha256",
+              "type": "string",
+              "doc": "Pins the exact text; chunk ids are content-addressed."
+            },
+            {
+              "name": "score",
+              "type": "double",
+              "doc": "Retrieval score after fusion, if any."
+            },
+            {
+              "name": "rank",
+              "type": "long",
+              "doc": "1-based rank in the context, after reranking."
+            }
+          ]
+        }
+      },
+      "default": [],
+      "doc": "What the model saw, in context order."
+    },
+    {
+      "name": "reranker_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "llm_id",
+      "type": "string",
+      "doc": "A model reference as provider/name@version (LLMs, rerankers, judges)."
+    },
+    {
+      "name": "llm_params",
+      "type": {
+        "type": "record",
+        "name": "LlmParams",
+        "namespace": "cairn",
+        "doc": "Generation parameters; part of the lineage of every answer.",
+        "fields": [
+          {
+            "name": "temperature",
+            "type": "double"
+          },
+          {
+            "name": "max_tokens",
+            "type": "long"
+          },
+          {
+            "name": "top_p",
+            "type": "double",
+            "default": 1.0
+          },
+          {
+            "name": "seed",
+            "type": [
+              "null",
+              "long"
+            ],
+            "default": null,
+            "doc": "Set when the provider honours seeds."
+          }
+        ]
+      }
+    },
+    {
+      "name": "response_text",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "The answer, unless the tenant's PII policy forbids retention."
+    },
+    {
+      "name": "response_sha256",
+      "type": "string",
+      "doc": "Always kept, even when response_text is not."
+    },
+    {
+      "name": "latency",
+      "type": {
+        "type": "record",
+        "name": "StageLatency",
+        "namespace": "cairn",
+        "doc": "Milliseconds per serving stage; the latency budget is checked against these (A19).",
+        "fields": [
+          {
+            "name": "retrieve_ms",
+            "type": "long"
+          },
+          {
+            "name": "rerank_ms",
+            "type": "long",
+            "default": 0
+          },
+          {
+            "name": "generate_ms",
+            "type": "long"
+          },
+          {
+            "name": "total_ms",
+            "type": "long"
+          }
+        ]
+      }
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "RequestStatus",
+        "symbols": [
+          "ok",
+          "error",
+          "timeout"
+        ]
+      }
+    },
+    {
+      "name": "trace_id",
+      "type": "string",
+      "doc": "OpenTelemetry trace id; joins the request to its spans."
+    },
+    {
+      "name": "tokens_in",
+      "type": "long",
+      "doc": "Input tokens charged for this row."
+    },
+    {
+      "name": "tokens_out",
+      "type": "long",
+      "default": 0,
+      "doc": "Output tokens charged for this row."
+    },
+    {
+      "name": "cost_usd",
+      "type": "double",
+      "doc": "Cost in USD at the price in force when the row was written."
+    }
+  ]
+}
