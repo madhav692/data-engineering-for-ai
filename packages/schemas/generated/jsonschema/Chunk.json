@@ -1,0 +1,144 @@
+{
+  "$id": "https://cairn.dev/schemas/Chunk.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A piece of a document version, cut by a versioned parser and chunker.\n\n``chunk_id`` is content-addressed: it excludes ordinal, byte offsets and the document's\ncontent hash, so a chunk whose text did not change keeps its id across revisions and\nposition shifts. That is what makes \"only re-embed what changed\" possible.",
+  "properties": {
+    "acl": {
+      "description": "Inherited from the document.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Acl",
+      "type": "array"
+    },
+    "byte_end": {
+      "description": "End offset in the parsed text, exclusive.",
+      "minimum": 1,
+      "title": "Byte End",
+      "type": "integer"
+    },
+    "byte_start": {
+      "description": "Start offset in the parsed text (for citations).",
+      "minimum": 0,
+      "title": "Byte Start",
+      "type": "integer"
+    },
+    "chunk_id": {
+      "description": "hash(doc_id, parser_version, chunker_version, text_sha256, occurrence).",
+      "pattern": "^chk_[0-9a-f]{32}$",
+      "title": "Chunk Id",
+      "type": "string"
+    },
+    "chunker_version": {
+      "description": "Chunker that cut it, e.g. struct-v2.",
+      "examples": [
+        "pymupdf-1.24.9",
+        "struct-v2",
+        "2026-10-02.1"
+      ],
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+      "title": "Chunker Version",
+      "type": "string"
+    },
+    "content_sha256": {
+      "description": "The document version this row was cut from (latest observed on MERGE).",
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Content Sha256",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "When this row was written (UTC, timezone-aware). Freshness is computed from it.",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "doc_id": {
+      "description": "The document this chunk belongs to.",
+      "pattern": "^doc_[0-9a-f]{32}$",
+      "title": "Doc Id",
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Flat string metadata: heading path, page, language, section type.",
+      "title": "Metadata",
+      "type": "object"
+    },
+    "occurrence": {
+      "default": 0,
+      "description": "Index among chunks of this document with identical text; keeps repeats distinct.",
+      "minimum": 0,
+      "title": "Occurrence",
+      "type": "integer"
+    },
+    "ordinal": {
+      "description": "Position of the chunk within the document version.",
+      "minimum": 0,
+      "title": "Ordinal",
+      "type": "integer"
+    },
+    "parser_version": {
+      "description": "Parser that produced the text, e.g. pymupdf-1.24.9.",
+      "examples": [
+        "pymupdf-1.24.9",
+        "struct-v2",
+        "2026-10-02.1"
+      ],
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+      "title": "Parser Version",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": 1,
+      "description": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md.",
+      "minimum": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "tenant_id": {
+      "description": "Tenant that owns the row. Every index query and cost report filters on it.",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Tenant Id",
+      "type": "string"
+    },
+    "text": {
+      "description": "The chunk text as it was embedded.",
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    },
+    "text_sha256": {
+      "description": "SHA-256 of text; the join key for dedup across chunks.",
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Text Sha256",
+      "type": "string"
+    },
+    "token_count": {
+      "description": "Tokens in text, counted with the embedding tokenizer.",
+      "minimum": 1,
+      "title": "Token Count",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "tenant_id",
+    "created_at",
+    "chunk_id",
+    "doc_id",
+    "content_sha256",
+    "parser_version",
+    "chunker_version",
+    "ordinal",
+    "byte_start",
+    "byte_end",
+    "text",
+    "text_sha256",
+    "token_count"
+  ],
+  "title": "Chunk",
+  "type": "object"
+}

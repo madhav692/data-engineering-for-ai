@@ -1,0 +1,109 @@
+{
+  "type": "record",
+  "name": "Document",
+  "namespace": "cairn",
+  "doc": "Registry entry: one row per (document, revision).",
+  "fields": [
+    {
+      "name": "tenant_id",
+      "type": "string",
+      "doc": "Tenant that owns the row. Every index query and cost report filters on it."
+    },
+    {
+      "name": "created_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      },
+      "doc": "When this row was written (UTC, timezone-aware). Freshness is computed from it."
+    },
+    {
+      "name": "schema_version",
+      "type": "long",
+      "default": 1,
+      "doc": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md."
+    },
+    {
+      "name": "doc_id",
+      "type": "string",
+      "doc": "Stable identity: hash of (source_id, canonical uri). Never changes on edit."
+    },
+    {
+      "name": "revision",
+      "type": "long",
+      "doc": "1-based position in this document's history; a delete is a revision too."
+    },
+    {
+      "name": "source_id",
+      "type": "string",
+      "doc": "Connector that produced the row, e.g. 'arxiv', 'docs-iceberg', 'tickets'."
+    },
+    {
+      "name": "uri",
+      "type": "string",
+      "doc": "Where the document was fetched from."
+    },
+    {
+      "name": "content_sha256",
+      "type": "string",
+      "doc": "Version of the document: SHA-256 of its raw bytes."
+    },
+    {
+      "name": "content_type",
+      "type": "string",
+      "doc": "MIME type of the raw bytes."
+    },
+    {
+      "name": "size_bytes",
+      "type": "long",
+      "doc": "Size of the raw bytes."
+    },
+    {
+      "name": "fetched_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      },
+      "doc": "When the connector fetched this version."
+    },
+    {
+      "name": "source_updated_at",
+      "type": [
+        "null",
+        {
+          "type": "long",
+          "logicalType": "timestamp-micros"
+        }
+      ],
+      "default": null,
+      "doc": "The source's own modification time, when it exposes one. Drives index lag."
+    },
+    {
+      "name": "acl",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "Principals allowed to read the document; inherited by its chunks."
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "DocumentStatus",
+        "symbols": [
+          "active",
+          "deleted"
+        ]
+      },
+      "default": "active",
+      "doc": "Deletes travel as tombstones, never as absence."
+    },
+    {
+      "name": "raw_object_key",
+      "type": "string",
+      "doc": "Object-store key of the raw bytes: raw/{source_id}/{sha[:2]}/{sha}."
+    }
+  ]
+}

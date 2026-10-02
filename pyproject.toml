@@ -1,0 +1,35 @@
+[project]
+name = "data-engineering-for-ai"
+version = "0.0.0"
+description = "Data Engineering for AI: the platform (Cairn), the flagship projects, and the shared packages behind the series."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+
+[tool.uv]
+# The root is a workspace container, not an installable package.
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "ruff>=0.6",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["packages/schemas/generated"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["cairn_schemas", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["packages/schemas/tests"]
+addopts = "-q"

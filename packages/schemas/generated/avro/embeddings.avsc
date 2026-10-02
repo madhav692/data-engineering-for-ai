@@ -1,0 +1,76 @@
+{
+  "type": "record",
+  "name": "Embedding",
+  "namespace": "cairn",
+  "doc": "A vector for one chunk under one embedding model.",
+  "fields": [
+    {
+      "name": "tenant_id",
+      "type": "string",
+      "doc": "Tenant that owns the row. Every index query and cost report filters on it."
+    },
+    {
+      "name": "created_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      },
+      "doc": "When this row was written (UTC, timezone-aware). Freshness is computed from it."
+    },
+    {
+      "name": "schema_version",
+      "type": "long",
+      "default": 1,
+      "doc": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md."
+    },
+    {
+      "name": "chunk_id",
+      "type": "string",
+      "doc": "The chunk that was embedded."
+    },
+    {
+      "name": "text_sha256",
+      "type": "string",
+      "doc": "What was actually embedded; lets dedup reuse a vector across identical texts."
+    },
+    {
+      "name": "embedding_model_id",
+      "type": "string",
+      "doc": "Embedding model as provider/name@version:dims. The model is the namespace of every vector it produced; two models never share an index."
+    },
+    {
+      "name": "vector",
+      "type": {
+        "type": "array",
+        "items": "float"
+      },
+      "doc": "The embedding, float32. 1,024 dims x 4 bytes = 4 KB per row."
+    },
+    {
+      "name": "dims",
+      "type": "long",
+      "doc": "Length of vector; must equal the model id's dims."
+    },
+    {
+      "name": "job_id",
+      "type": "string",
+      "doc": "The embedding job that wrote the row."
+    },
+    {
+      "name": "tokens_in",
+      "type": "long",
+      "doc": "Input tokens charged for this row."
+    },
+    {
+      "name": "tokens_out",
+      "type": "long",
+      "default": 0,
+      "doc": "Output tokens charged for this row."
+    },
+    {
+      "name": "cost_usd",
+      "type": "double",
+      "doc": "Cost in USD at the price in force when the row was written."
+    }
+  ]
+}

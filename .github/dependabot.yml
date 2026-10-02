@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Python dependencies managed by uv (falls back to "pip" if your Dependabot does not support "uv" yet).
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      python:
+        patterns: ["*"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

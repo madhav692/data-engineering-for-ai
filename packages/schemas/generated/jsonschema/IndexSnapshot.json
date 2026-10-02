@@ -1,0 +1,98 @@
+{
+  "$id": "https://cairn.dev/schemas/IndexSnapshot.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One build of one index from one lakehouse snapshot under one model.\n\nThis is the record Day 23 lacked: it says what the index was built from, so index lag\nis a computed number and a response can name the exact index it read.",
+  "properties": {
+    "built_at": {
+      "description": "When the build finished.",
+      "format": "date-time",
+      "title": "Built At",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "When this row was written (UTC, timezone-aware). Freshness is computed from it.",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "embedding_model_id": {
+      "description": "Embedding model as provider/name@version:dims. The model is the namespace of every vector it produced; two models never share an index.",
+      "examples": [
+        "openai/text-embedding-3-small@2024-01:1536",
+        "baai/bge-base-en@1.5:768"
+      ],
+      "pattern": "^[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9][A-Za-z0-9._-]*:[1-9][0-9]*$",
+      "title": "Embedding Model Id",
+      "type": "string"
+    },
+    "index_name": {
+      "description": "'{base}--{model slug}': the model is part of the name (versions are namespaces).",
+      "pattern": "^[a-z0-9][a-z0-9_-]*--[a-z0-9][a-z0-9-]*$",
+      "title": "Index Name",
+      "type": "string"
+    },
+    "index_snapshot_id": {
+      "description": "hash(index_name, embedding_model_id, lakehouse_snapshot_id).",
+      "pattern": "^idx_[0-9a-f]{32}$",
+      "title": "Index Snapshot Id",
+      "type": "string"
+    },
+    "lag_seconds_at_build": {
+      "description": "Newest source_updated_at in the lakehouse minus the snapshot time, at build.",
+      "minimum": 0,
+      "title": "Lag Seconds At Build",
+      "type": "integer"
+    },
+    "lakehouse_snapshot_id": {
+      "description": "Iceberg snapshot id of the embeddings table the build read.",
+      "minLength": 1,
+      "title": "Lakehouse Snapshot Id",
+      "type": "string"
+    },
+    "row_count": {
+      "description": "Vectors in the index at build time.",
+      "minimum": 0,
+      "title": "Row Count",
+      "type": "integer"
+    },
+    "schema_version": {
+      "default": 1,
+      "description": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md.",
+      "minimum": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "status": {
+      "description": "Only one snapshot per index_name is live; cutover moves a pointer.",
+      "enum": [
+        "building",
+        "live",
+        "retired"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tenant_id": {
+      "description": "Tenant that owns the row. Every index query and cost report filters on it.",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Tenant Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "tenant_id",
+    "created_at",
+    "index_snapshot_id",
+    "index_name",
+    "embedding_model_id",
+    "lakehouse_snapshot_id",
+    "built_at",
+    "row_count",
+    "lag_seconds_at_build",
+    "status"
+  ],
+  "title": "IndexSnapshot",
+  "type": "object"
+}

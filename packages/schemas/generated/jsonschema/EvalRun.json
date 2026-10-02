@@ -1,0 +1,271 @@
+{
+  "$defs": {
+    "EvalConfig": {
+      "additionalProperties": false,
+      "description": "The versions an evaluation ran against: the same keys a Request carries.\n\nThe contract test asserts that every field here exists on Request with the same type,\nso an eval run and a production request are always comparable.",
+      "properties": {
+        "embedding_model_id": {
+          "description": "Embedding model as provider/name@version:dims. The model is the namespace of every vector it produced; two models never share an index.",
+          "examples": [
+            "openai/text-embedding-3-small@2024-01:1536",
+            "baai/bge-base-en@1.5:768"
+          ],
+          "pattern": "^[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9][A-Za-z0-9._-]*:[1-9][0-9]*$",
+          "title": "Embedding Model Id",
+          "type": "string"
+        },
+        "index_snapshot_id": {
+          "pattern": "^idx_[0-9a-f]{32}$",
+          "title": "Index Snapshot Id",
+          "type": "string"
+        },
+        "llm_id": {
+          "description": "A model reference as provider/name@version (LLMs, rerankers, judges).",
+          "examples": [
+            "anthropic/claude-sonnet-4-5@2025-09-29",
+            "cohere/rerank-v3.5@2024-12"
+          ],
+          "pattern": "^[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "title": "Llm Id",
+          "type": "string"
+        },
+        "llm_params": {
+          "$ref": "#/$defs/LlmParams"
+        },
+        "prompt_template_version": {
+          "description": "A version tag: letters, digits, dot, underscore, dash; 1-64 characters.",
+          "examples": [
+            "pymupdf-1.24.9",
+            "struct-v2",
+            "2026-10-02.1"
+          ],
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+          "title": "Prompt Template Version",
+          "type": "string"
+        },
+        "reranker_id": {
+          "anyOf": [
+            {
+              "description": "A model reference as provider/name@version (LLMs, rerankers, judges).",
+              "examples": [
+                "anthropic/claude-sonnet-4-5@2025-09-29",
+                "cohere/rerank-v3.5@2024-12"
+              ],
+              "pattern": "^[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9][A-Za-z0-9._-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reranker Id"
+        },
+        "retrieval_config_version": {
+          "description": "A version tag: letters, digits, dot, underscore, dash; 1-64 characters.",
+          "examples": [
+            "pymupdf-1.24.9",
+            "struct-v2",
+            "2026-10-02.1"
+          ],
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+          "title": "Retrieval Config Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompt_template_version",
+        "retrieval_config_version",
+        "index_snapshot_id",
+        "embedding_model_id",
+        "llm_id",
+        "llm_params"
+      ],
+      "title": "EvalConfig",
+      "type": "object"
+    },
+    "LlmParams": {
+      "additionalProperties": false,
+      "description": "Generation parameters; part of the lineage of every answer.",
+      "properties": {
+        "max_tokens": {
+          "minimum": 1,
+          "title": "Max Tokens",
+          "type": "integer"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Set when the provider honours seeds.",
+          "title": "Seed"
+        },
+        "temperature": {
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Temperature",
+          "type": "number"
+        },
+        "top_p": {
+          "default": 1.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Top P",
+          "type": "number"
+        }
+      },
+      "required": [
+        "temperature",
+        "max_tokens"
+      ],
+      "title": "LlmParams",
+      "type": "object"
+    }
+  },
+  "$id": "https://cairn.dev/schemas/EvalRun.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One evaluation of one configuration against one version of one eval set.\n\nTwo runs with equal ``config`` and equal (eval_set_id, eval_set_version) are comparable;\nCI compares a candidate run to ``baseline_run_id`` before a data change ships (C8).",
+  "properties": {
+    "baseline_run_id": {
+      "anyOf": [
+        {
+          "pattern": "^run_[0-9a-f]{32}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The run this one is compared against.",
+      "title": "Baseline Run Id"
+    },
+    "config": {
+      "$ref": "#/$defs/EvalConfig"
+    },
+    "cost_usd": {
+      "description": "Cost in USD at the price in force when the row was written.",
+      "minimum": 0,
+      "title": "Cost Usd",
+      "type": "number"
+    },
+    "created_at": {
+      "description": "When this row was written (UTC, timezone-aware). Freshness is computed from it.",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "eval_set_id": {
+      "description": "The golden set, e.g. 'cairn-core'.",
+      "minLength": 1,
+      "title": "Eval Set Id",
+      "type": "string"
+    },
+    "eval_set_version": {
+      "description": "Version of the golden set; sets are immutable.",
+      "examples": [
+        "pymupdf-1.24.9",
+        "struct-v2",
+        "2026-10-02.1"
+      ],
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+      "title": "Eval Set Version",
+      "type": "string"
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Finished At"
+    },
+    "git_sha": {
+      "description": "Code version of the runner.",
+      "pattern": "^[0-9a-f]{7,40}$",
+      "title": "Git Sha",
+      "type": "string"
+    },
+    "metrics": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "description": "e.g. recall_at_5, mrr, faithfulness, p95_ms.",
+      "title": "Metrics",
+      "type": "object"
+    },
+    "run_id": {
+      "pattern": "^run_[0-9a-f]{32}$",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": 1,
+      "description": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md.",
+      "minimum": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "started_at": {
+      "format": "date-time",
+      "title": "Started At",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "running",
+        "succeeded",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tenant_id": {
+      "description": "Tenant that owns the row. Every index query and cost report filters on it.",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Tenant Id",
+      "type": "string"
+    },
+    "tokens_in": {
+      "description": "Input tokens charged for this row.",
+      "minimum": 0,
+      "title": "Tokens In",
+      "type": "integer"
+    },
+    "tokens_out": {
+      "default": 0,
+      "description": "Output tokens charged for this row.",
+      "minimum": 0,
+      "title": "Tokens Out",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "tenant_id",
+    "created_at",
+    "tokens_in",
+    "cost_usd",
+    "run_id",
+    "eval_set_id",
+    "eval_set_version",
+    "config",
+    "git_sha",
+    "started_at",
+    "status"
+  ],
+  "title": "EvalRun",
+  "type": "object"
+}

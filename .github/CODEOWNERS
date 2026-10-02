@@ -1,0 +1,5 @@
+# Code owners: GitHub requests a review from these handles on every pull request
+# that touches the matching paths. Replace the placeholder with your handle.
+*                       @Madhav692
+/packages/schemas/      @Madhav692
+/docs/adr/              @Madhav692

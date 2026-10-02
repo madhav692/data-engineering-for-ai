@@ -1,0 +1,78 @@
+{
+  "type": "record",
+  "name": "IndexSnapshot",
+  "namespace": "cairn",
+  "doc": "One build of one index from one lakehouse snapshot under one model.",
+  "fields": [
+    {
+      "name": "tenant_id",
+      "type": "string",
+      "doc": "Tenant that owns the row. Every index query and cost report filters on it."
+    },
+    {
+      "name": "created_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      },
+      "doc": "When this row was written (UTC, timezone-aware). Freshness is computed from it."
+    },
+    {
+      "name": "schema_version",
+      "type": "long",
+      "default": 1,
+      "doc": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md."
+    },
+    {
+      "name": "index_snapshot_id",
+      "type": "string",
+      "doc": "hash(index_name, embedding_model_id, lakehouse_snapshot_id)."
+    },
+    {
+      "name": "index_name",
+      "type": "string",
+      "doc": "'{base}--{model slug}': the model is part of the name (versions are namespaces)."
+    },
+    {
+      "name": "embedding_model_id",
+      "type": "string",
+      "doc": "Embedding model as provider/name@version:dims. The model is the namespace of every vector it produced; two models never share an index."
+    },
+    {
+      "name": "lakehouse_snapshot_id",
+      "type": "string",
+      "doc": "Iceberg snapshot id of the embeddings table the build read."
+    },
+    {
+      "name": "built_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      },
+      "doc": "When the build finished."
+    },
+    {
+      "name": "row_count",
+      "type": "long",
+      "doc": "Vectors in the index at build time."
+    },
+    {
+      "name": "lag_seconds_at_build",
+      "type": "long",
+      "doc": "Newest source_updated_at in the lakehouse minus the snapshot time, at build."
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "IndexSnapshotStatus",
+        "symbols": [
+          "building",
+          "live",
+          "retired"
+        ]
+      },
+      "doc": "Only one snapshot per index_name is live; cutover moves a pointer."
+    }
+  ]
+}

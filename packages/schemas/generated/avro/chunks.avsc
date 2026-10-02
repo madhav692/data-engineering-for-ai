@@ -1,0 +1,106 @@
+{
+  "type": "record",
+  "name": "Chunk",
+  "namespace": "cairn",
+  "doc": "A piece of a document version, cut by a versioned parser and chunker.",
+  "fields": [
+    {
+      "name": "tenant_id",
+      "type": "string",
+      "doc": "Tenant that owns the row. Every index query and cost report filters on it."
+    },
+    {
+      "name": "created_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      },
+      "doc": "When this row was written (UTC, timezone-aware). Freshness is computed from it."
+    },
+    {
+      "name": "schema_version",
+      "type": "long",
+      "default": 1,
+      "doc": "Version of this row's schema. Bumped on any field change; see CONTRIBUTING.md."
+    },
+    {
+      "name": "chunk_id",
+      "type": "string",
+      "doc": "hash(doc_id, parser_version, chunker_version, text_sha256, occurrence)."
+    },
+    {
+      "name": "doc_id",
+      "type": "string",
+      "doc": "The document this chunk belongs to."
+    },
+    {
+      "name": "content_sha256",
+      "type": "string",
+      "doc": "The document version this row was cut from (latest observed on MERGE)."
+    },
+    {
+      "name": "parser_version",
+      "type": "string",
+      "doc": "Parser that produced the text, e.g. pymupdf-1.24.9."
+    },
+    {
+      "name": "chunker_version",
+      "type": "string",
+      "doc": "Chunker that cut it, e.g. struct-v2."
+    },
+    {
+      "name": "ordinal",
+      "type": "long",
+      "doc": "Position of the chunk within the document version."
+    },
+    {
+      "name": "occurrence",
+      "type": "long",
+      "default": 0,
+      "doc": "Index among chunks of this document with identical text; keeps repeats distinct."
+    },
+    {
+      "name": "byte_start",
+      "type": "long",
+      "doc": "Start offset in the parsed text (for citations)."
+    },
+    {
+      "name": "byte_end",
+      "type": "long",
+      "doc": "End offset in the parsed text, exclusive."
+    },
+    {
+      "name": "text",
+      "type": "string",
+      "doc": "The chunk text as it was embedded."
+    },
+    {
+      "name": "text_sha256",
+      "type": "string",
+      "doc": "SHA-256 of text; the join key for dedup across chunks."
+    },
+    {
+      "name": "token_count",
+      "type": "long",
+      "doc": "Tokens in text, counted with the embedding tokenizer."
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Flat string metadata: heading path, page, language, section type."
+    },
+    {
+      "name": "acl",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "Inherited from the document."
+    }
+  ]
+}
