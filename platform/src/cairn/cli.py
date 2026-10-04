@@ -6,6 +6,7 @@ cairn build-index                  build the index for the live model; flip the 
 cairn ask "QUESTION"               POST /ask and print the answer, citations and request_id
 cairn replay REQUEST_ID [--diff B] print a request's lineage and re-run its retrieval
 cairn feedback REQUEST_ID ...      POST /feedback
+cairn requests [--limit N]         recent request ids (for replay and feedback)
 cairn eval [--set small]           run a golden set; write an EvalRun
 cairn lag                          index_lag_seconds per source
 cairn stats                        corpus and database numbers for CHANGES-stage-0.md
@@ -248,6 +249,31 @@ def eval_(
         rank = f"@{r.first_hit_rank}" if r.first_hit_rank else "   "
         typer.echo(f"  {mark} {rank}  {r.question}")
     typer.echo(report.line())
+
+
+@app.command()
+def requests(
+    limit: Annotated[int, typer.Option("--limit", "-n", help="How many, newest first.")] = 10,
+) -> None:
+    """Recent requests: id, time, status, generator, question (the ids replay and feedback take)."""
+    settings = _settings()
+    db = _db(settings)
+    rows = db.rows(
+        "SELECT request_id, received_at, status, llm_id, query_text FROM requests "
+        "ORDER BY received_at DESC LIMIT %s",
+        (limit,),
+    )
+    if not rows:
+        typer.echo('no requests yet: cairn ask "..."')
+        return
+    for r in rows:
+        question = (r["query_text"] or "").replace("\n", " ")
+        if len(question) > 60:
+            question = question[:57] + "..."
+        typer.echo(
+            f"{r['request_id']}  {r['received_at']:%Y-%m-%d %H:%M:%S}  {r['status']:<6} "
+            f"{r['llm_id']:<24} {question}"
+        )
 
 
 @app.command()
