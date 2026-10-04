@@ -110,8 +110,8 @@ class S3ObjectStore:
     def count(self, prefix: str = "raw/") -> int:
         return sum(1 for _ in self._client.list_objects(self.bucket, prefix=prefix, recursive=True))
 
-    def remove_bucket(self) -> None:
-        """Delete every object, then the bucket (the tests use this; nothing else should)."""
+    def clear(self) -> int:
+        """Delete every object in the bucket (the tests use this; nothing else should)."""
         from minio.deleteobjects import DeleteObject
 
         objects = [
@@ -121,6 +121,11 @@ class S3ObjectStore:
         if objects:
             for error in self._client.remove_objects(self.bucket, objects):
                 raise RuntimeError(f"could not delete {error.object_name}: {error.message}")
+        return len(objects)
+
+    def remove_bucket(self) -> None:
+        """Delete every object, then the bucket."""
+        self.clear()
         self._client.remove_bucket(self.bucket)
 
     def describe(self) -> str:
