@@ -21,8 +21,9 @@ make replay REQ=<the request_id it printed>
 make test         # the platform suite (16 unit + 13 seam tests) against the running containers
 ```
 
-More: `make lag`, `make eval`, `make feedback REQ=... KIND=thumbs VALUE=-1`, `make stats`,
-`make logs`, `make stop`, `make down` (removes the volumes too). `make help` lists everything.
+More: `make requests` (the logged request ids, newest first, for `replay` and `feedback`),
+`make lag`, `make eval`, `make feedback REQ=... KIND=thumbs VALUE=-1`, `make stats`, `make logs`,
+`make stop`, `make down` (removes the volumes too). `make help` lists everything.
 
 Swap the generator for one question (any OpenAI-compatible endpoint, here Ollama on the host):
 
@@ -39,7 +40,7 @@ platform/
 ├── Dockerfile                    python:3.12-slim + uv; the api image
 ├── CHANGES-stage-0.md            what the stage adds, the invariant, the measured numbers
 ├── src/cairn/
-│   ├── cli.py                    migrate · ingest · build-index · ask · replay · feedback · eval · lag · stats · serve
+│   ├── cli.py                    migrate · ingest · build-index · ask · requests · replay · feedback · eval · lag · stats · serve
 │   ├── config.py                 CAIRN_* settings
 │   ├── ingestion/filesystem.py   1. walk a folder; Document.from_bytes; is_change; tombstones
 │   ├── lakehouse/                2. db.py (pool, inserts from contract rows), objects.py (S3 / fs), migrate.py
@@ -91,7 +92,7 @@ Every one of these is written into every `Request` row; that is the Stage 0 inva
 integration suite also runs on the host: `make test-platform`. It uses the hashing embedder and
 a temporary directory as the object store by default (no model download, no S3). Three variables
 turn the thin ends real: `CAIRN_TEST_EMBEDDER=fastembed` for the model,
-`CAIRN_TEST_S3_ENDPOINT=http://localhost:8333` for the compose SeaweedFS (every test gets its own
-bucket), and `CAIRN_TEST_DATABASE_URL=postgresql://cairn:cairn@localhost:5432/cairn` for the
+`CAIRN_TEST_S3_ENDPOINT=http://localhost:8333` for the compose SeaweedFS (the tests empty and reuse
+one bucket, `cairn-test`, never `cairn`), and `CAIRN_TEST_DATABASE_URL=postgresql://cairn:cairn@localhost:5432/cairn` for the
 compose Postgres (the tests create and use a `cairn_test` database beside it, never the one you
 ingested into). `make test` runs the suite inside the api container with all three real.

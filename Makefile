@@ -110,6 +110,9 @@ eval: ## Run the golden set through /ask and write an EvalRun (SET=small)
 lag: ## index_lag_seconds per source
 	$(EXEC) api cairn lag
 
+requests: ## Recent request ids, newest first (for make replay / make feedback): make requests [N=10]
+	$(EXEC) api cairn requests --limit $(or $(N),10)
+
 stats: ## Corpus and database numbers
 	$(EXEC) api cairn stats
 

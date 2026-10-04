@@ -11,14 +11,15 @@ named ``<dbname>_test`` beside it. Every test starts from an empty schema.
 
 The embedder is the hashing test double unless ``CAIRN_TEST_EMBEDDER=fastembed``. The object
 store is a temporary directory unless ``CAIRN_TEST_S3_ENDPOINT`` names an S3 endpoint (inside the
-api container, ``make test`` points it at the compose SeaweedFS), in which case every test gets
-its own bucket, removed afterwards. Both are the thin end of a seam the tests exercise either way.
+api container, ``make test`` points it at the compose SeaweedFS): then one bucket, ``cairn-test``
+by default (``CAIRN_TEST_S3_BUCKET``), is emptied before every test. One bucket rather than one
+per test because SeaweedFS backs each bucket with its own set of volume files. Both are the thin
+end of a seam the tests exercise either way.
 """
 
 from __future__ import annotations
 
 import os
-import uuid
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -69,13 +70,15 @@ def shared_db(database_url: str) -> Iterator[Db]:
 
 @pytest.fixture
 def object_store(tmp_path: Path) -> Iterator[tuple[ObjectStore, Settings]]:
-    """A fresh store per test: a temporary directory, or a fresh bucket on a real S3 endpoint."""
+    """An empty store per test: a temporary directory, or an emptied bucket on a real S3."""
     endpoint = os.environ.get("CAIRN_TEST_S3_ENDPOINT")
     if not endpoint:
         settings = Settings(object_store="fs", fs_store_dir=str(tmp_path / "objects"))
         yield FsObjectStore(settings.fs_store_dir), settings
         return
-    bucket = f"cairn-test-{uuid.uuid4().hex[:10]}"
+    bucket = os.environ.get("CAIRN_TEST_S3_BUCKET", "cairn-test")
+    if bucket == os.environ.get("CAIRN_S3_BUCKET", "cairn"):
+        raise RuntimeError("CAIRN_TEST_S3_BUCKET must not be the bucket the platform ingests into")
     settings = Settings(
         object_store="s3",
         s3_endpoint=endpoint,
@@ -85,10 +88,8 @@ def object_store(tmp_path: Path) -> Iterator[tuple[ObjectStore, Settings]]:
     )
     store = S3ObjectStore(endpoint, bucket, settings.s3_access_key, settings.s3_secret_key)
     store.ensure_bucket()
-    try:
-        yield store, settings
-    finally:
-        store.remove_bucket()
+    store.clear()
+    yield store, settings
 
 
 @pytest.fixture

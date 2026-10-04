@@ -41,10 +41,14 @@ services:
     image: chrislusf/seaweedfs:4.48
     container_name: cairn-seaweedfs
     profiles: [core]
-    # The image's entrypoint adds -dir=/data; the rest is explicit.
+    # The image's entrypoint adds -dir=/data; the rest is explicit. Every S3 bucket is a
+    # collection of 7 volume files, and the files grow with the data, so the slot budget
+    # (-volume.max) is a fixed 100 rather than "whatever free disk divided by the volume size
+    # allows": on a Docker VM with little free space the auto budget was 7 slots, the first
+    # bucket took them all, and every write to a second bucket failed with a 500.
     command: >-
-      server -s3 -ip=seaweedfs -ip.bind=0.0.0.0 -volume.max=0
-      -master.volumeSizeLimitMB=256 -s3.port=8333
+      server -s3 -ip=seaweedfs -ip.bind=0.0.0.0 -volume.max=100
+      -master.volumeSizeLimitMB=64 -s3.port=8333
     environment:
       # With no -s3.config, these two variables define the one (admin) identity.
       AWS_ACCESS_KEY_ID: cairn
