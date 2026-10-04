@@ -91,7 +91,7 @@ Every one of these is written into every `Request` row; that is the Stage 0 inva
 integration suite also runs on the host: `make test-platform`. It uses the hashing embedder and
 a temporary directory as the object store by default (no model download, no S3). Three variables
 turn the thin ends real: `CAIRN_TEST_EMBEDDER=fastembed` for the model,
-`CAIRN_TEST_S3_ENDPOINT=http://localhost:8333` for the compose SeaweedFS (every test gets its own
-bucket), and `CAIRN_TEST_DATABASE_URL=postgresql://cairn:cairn@localhost:5432/cairn` for the
+`CAIRN_TEST_S3_ENDPOINT=http://localhost:8333` for the compose SeaweedFS (the tests empty and reuse
++one bucket, `cairn-test`, never `cairn`), and `CAIRN_TEST_DATABASE_URL=postgresql://cairn:cairn@localhost:5432/cairn` for the
 compose Postgres (the tests create and use a `cairn_test` database beside it, never the one you
 ingested into). `make test` runs the suite inside the api container with all three real.
