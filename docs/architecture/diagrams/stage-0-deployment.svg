@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" width="760" height="440" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" role="img" aria-labelledby="title">
+  <title id="title">Cairn Stage 0: three containers, one bind mount, make on the host</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#9a9a9a"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect width="760" height="440" fill="#ffffff"/>
+  <text x="24" y="28" font-size="15" font-weight="600" fill="#1f1f1f">Stage 0: three containers, one bind mount, make on the host</text>
+
+  <!-- the host -->
+  <rect x="24" y="48" width="712" height="368" rx="10" fill="none" stroke="#c7c7c7" stroke-width="1.25" stroke-dasharray="6 4"/>
+  <text x="40" y="70" font-size="12" font-weight="600" fill="#1f1f1f">your laptop</text>
+  <text x="40" y="86" fill="#6b6b6b">needs Docker and make; no Python, no API key, no GPU</text>
+
+  <!-- make -->
+  <g>
+    <rect x="40" y="110" width="150" height="72" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="115" y="134" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">make</text>
+    <text x="115" y="152" text-anchor="middle" fill="#6b6b6b">start · ingest · build-index</text>
+    <text x="115" y="168" text-anchor="middle" fill="#6b6b6b">ask · replay · test</text>
+  </g>
+
+  <!-- the repository checkout -->
+  <g>
+    <rect x="40" y="214" width="150" height="92" rx="8" fill="#f4f4f4" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="115" y="238" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">the clone</text>
+    <text x="115" y="256" text-anchor="middle" fill="#6b6b6b">platform/  packages/</text>
+    <text x="115" y="272" text-anchor="middle" fill="#6b6b6b">datasets/  docs/</text>
+    <text x="115" y="288" text-anchor="middle" fill="#6b6b6b">mounted, read in place</text>
+  </g>
+
+  <!-- optional LLM -->
+  <g>
+    <rect x="40" y="336" width="150" height="62" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25" stroke-dasharray="4 3"/>
+    <text x="115" y="358" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">LLM, optional</text>
+    <text x="115" y="376" text-anchor="middle" fill="#6b6b6b">Ollama on the host, or a</text>
+    <text x="115" y="390" text-anchor="middle" fill="#6b6b6b">hosted API, by URL</text>
+  </g>
+
+  <!-- compose -->
+  <rect x="236" y="104" width="484" height="296" rx="10" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+  <text x="252" y="126" font-size="12" font-weight="600" fill="#1f1f1f">docker compose, profile core</text>
+  <text x="252" y="142" fill="#6b6b6b">infra/compose/base.yml</text>
+
+  <!-- api (accent) -->
+  <g>
+    <rect x="252" y="160" width="200" height="110" rx="8" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="2"/>
+    <text x="352" y="184" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">api</text>
+    <text x="352" y="202" text-anchor="middle" fill="#1f1f1f">FastAPI: /ask /feedback</text>
+    <text x="352" y="218" text-anchor="middle" fill="#1f1f1f">/metrics /healthz · :8000</text>
+    <text x="352" y="234" text-anchor="middle" fill="#1f1f1f">the cairn command-line tool</text>
+    <text x="352" y="250" text-anchor="middle" fill="#1f1f1f">fastembed on the CPU</text>
+    <text x="352" y="264" text-anchor="middle" fill="#6b6b6b">built from platform/Dockerfile</text>
+  </g>
+
+  <!-- postgres -->
+  <g>
+    <rect x="504" y="160" width="200" height="92" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="604" y="184" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">postgres</text>
+    <text x="604" y="202" text-anchor="middle" fill="#6b6b6b">pgvector/pgvector:pg16 · :5432</text>
+    <text x="604" y="218" text-anchor="middle" fill="#6b6b6b">seven contract tables</text>
+    <text x="604" y="234" text-anchor="middle" fill="#6b6b6b">index tables, the request log</text>
+  </g>
+
+  <!-- seaweedfs -->
+  <g>
+    <rect x="504" y="288" width="200" height="92" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="604" y="312" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">seaweedfs</text>
+    <text x="604" y="330" text-anchor="middle" fill="#6b6b6b">S3 API on :8333</text>
+    <text x="604" y="346" text-anchor="middle" fill="#6b6b6b">raw bytes of every version</text>
+    <text x="604" y="362" text-anchor="middle" fill="#6b6b6b">raw/{source}/{sha[:2]}/{sha}</text>
+  </g>
+
+  <!-- volumes -->
+  <g>
+    <rect x="252" y="300" width="200" height="80" rx="8" fill="#f4f4f4" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="352" y="324" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">volumes</text>
+    <text x="352" y="342" text-anchor="middle" fill="#6b6b6b">pgdata · objects</text>
+    <text x="352" y="358" text-anchor="middle" fill="#6b6b6b">model-cache: the embedding</text>
+    <text x="352" y="372" text-anchor="middle" fill="#6b6b6b">model, downloaded once</text>
+  </g>
+
+  <!-- arrows -->
+  <g fill="none" stroke="#9a9a9a" stroke-width="1.25">
+    <!-- make -> api: docker compose exec -->
+    <path d="M190 146H222V200H252" marker-end="url(#arrow)"/>
+    <!-- api -> postgres: SQL -->
+    <path d="M452 206H504" marker-end="url(#arrow)"/>
+    <!-- api -> seaweedfs: S3 -->
+    <path d="M452 240H478V334H504" marker-end="url(#arrow)"/>
+  </g>
+  <!-- bind mount: the clone -> api (dashed: control / configuration) -->
+  <path d="M190 260H222V232H252" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow-accent)"/>
+  <!-- optional LLM -->
+  <path d="M190 367H222V268H252" fill="none" stroke="#d4d4d4" stroke-width="1.25" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+
+  <text x="206" y="192" fill="#6b6b6b" font-size="10.5">compose exec</text>
+  <text x="458" y="200" fill="#6b6b6b" font-size="10.5">SQL</text>
+  <text x="458" y="290" fill="#6b6b6b" font-size="10.5">S3</text>
+  <text x="193" y="224" fill="#2563eb" font-size="10">bind mount</text>
+  <text x="196" y="302" fill="#6b6b6b" font-size="10.5">URL</text>
+
+  <text x="24" y="434" fill="#6b6b6b" font-size="10.5">Solid: data. Dashed: control or configuration. Blue: the thing the diagram is about and the one mount that makes an edit a restart, not a rebuild.</text>
+</svg>

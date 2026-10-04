@@ -32,3 +32,9 @@ jobs:
 
       - name: Contract tests
         run: make test-contracts
+
+      - name: Platform unit tests
+        run: make test-unit
+
+      - name: Platform seam tests on an embedded Postgres (hashing embedder)
+        run: make test-platform

@@ -1,0 +1,26 @@
+%% Stage 0 deployment: three containers, one bind mount, make on the host.
+%% Editable source; stage-0-deployment.svg is the hand-tuned export used by A3 (Fig 1) and the READMEs.
+flowchart LR
+  subgraph host["your laptop: Docker + make, nothing else"]
+    MAKE["<b>make</b><br/>start · ingest · build-index<br/>ask · replay · test"]
+    CLONE["<b>the clone</b><br/>platform/ packages/ datasets/ docs/"]
+    LLM["LLM, optional<br/>Ollama on the host or a hosted API"]
+    subgraph compose["docker compose, profile core (infra/compose/base.yml)"]
+      API["<b>api</b><br/>FastAPI /ask /feedback /metrics /healthz<br/>the cairn CLI · fastembed on the CPU"]
+      PG["<b>postgres</b><br/>pgvector/pgvector:pg16<br/>contract tables, index tables, request log"]
+      S3["<b>seaweedfs</b><br/>S3 API · raw/{source}/{sha[:2]}/{sha}"]
+      VOL["volumes: pgdata · objects · model-cache"]
+    end
+  end
+  MAKE -- "compose exec" --> API
+  CLONE -. "bind mount" .-> API
+  LLM -. "URL" .-> API
+  API -- "SQL" --> PG
+  API -- "S3" --> S3
+
+  classDef box fill:#ffffff,stroke:#c7c7c7,stroke-width:1.25px,color:#1f1f1f;
+  classDef accent fill:#e8effd,stroke:#2563eb,stroke-width:2px,color:#1f1f1f;
+  classDef band fill:#f4f4f4,stroke:#c7c7c7,stroke-width:1.25px,color:#1f1f1f;
+  class MAKE,PG,S3,LLM box;
+  class API accent;
+  class CLONE,VOL band;

@@ -1,0 +1,46 @@
+[project]
+name = "cairn"
+version = "0.1.0"
+description = "Cairn: the AI knowledge platform behind Data Engineering for AI. Stage 0 is the walking skeleton (A3)."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+dependencies = [
+  "cairn-schemas",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "psycopg[binary,pool]>=3.2",
+  "fastembed>=0.4",
+  "tokenizers>=0.19",
+  "minio>=7.2",
+  "httpx>=0.27",
+  "typer>=0.12",
+]
+
+[project.scripts]
+cairn = "cairn.cli:main"
+
+[dependency-groups]
+# `test` is installed in the api image so `make test` runs the integration suite in a container.
+test = [
+  "httpx2>=2.13.1",
+  "pytest>=8.3",
+  "pytest-timeout>=2.3",
+]
+# `dev` adds an embedded Postgres (with pgvector) so `uv run pytest platform/tests` works on a
+# laptop without Docker. The api image does not install it.
+dev = [
+  { include-group = "test" },
+  "pgserver>=0.1.4; sys_platform != 'win32' and python_version < '3.13'",
+]
+
+[tool.uv.sources]
+cairn-schemas = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cairn"]
+

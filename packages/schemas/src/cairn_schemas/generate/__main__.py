@@ -1,4 +1,5 @@
-"""Generate every contract artefact from the models, or check that the committed ones match.
+"""Generate every contract artefact (Avro, Iceberg DDL, JSON Schema, Postgres DDL) from the
+models, or check that the committed ones match.
 
 python -m cairn_schemas.generate --out packages/schemas/generated          # write
 python -m cairn_schemas.generate --out packages/schemas/generated --check  # CI drift check
@@ -11,7 +12,7 @@ import json
 import sys
 from pathlib import Path
 
-from cairn_schemas.generate import avro, iceberg, jsonschema
+from cairn_schemas.generate import avro, iceberg, jsonschema, postgres
 from cairn_schemas.generate._fields import table_metadata
 from cairn_schemas.models import ALL_MODELS
 
@@ -24,6 +25,7 @@ def render_all() -> dict[str, str]:
         files[f"avro/{model.TABLE}.avsc"] = avro.render(model)
         files[f"iceberg/{model.TABLE}.sql"] = iceberg.render(model)
         files[f"jsonschema/{model.__name__}.json"] = jsonschema.render(model)
+        files[f"postgres/{model.TABLE}.sql"] = postgres.render(model)
         manifest.append(table_metadata(model))
     files["manifest.json"] = json.dumps(manifest, indent=2) + "\n"
     return files

@@ -35,6 +35,17 @@ Contracts live in `packages/schemas/`. A change is one pull request containing a
 Consumers own the tests; producers own the schema. Both are in the same package so a
 reviewer sees both halves.
 
+## Changing the platform
+
+`platform/` is one subpackage per subsystem; a change stays inside its subsystem unless it
+changes a contract, in which case see above. Every seam between two subsystems has an
+integration test under `platform/tests/integration/`, named for what it proves
+(`test_edit_reembeds_exactly_one_chunk`), and runs against a real Postgres: on the host through
+`make test-platform` (embedded Postgres, hashing embedder), in the api container through
+`make test` (compose Postgres, the real model). A new behaviour at a seam is a new test there.
+Measured numbers for an article go into `platform/CHANGES-stage-N.md`, with the command that
+produced them.
+
 ## Before you push
 
 ```bash
@@ -42,6 +53,7 @@ make fmt              # ruff format + fix
 make lint
 make check-schemas
 make test-contracts
+make test-platform    # the platform suite on an embedded Postgres; needs the dev group
 ```
 
 ## Tags

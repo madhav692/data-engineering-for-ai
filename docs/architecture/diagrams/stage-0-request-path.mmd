@@ -1,0 +1,16 @@
+%% The request path at Stage 0: six steps, the fifth before the sixth.
+%% Editable source; stage-0-request-path.svg is the hand-tuned export used by A3 (Fig 2).
+flowchart LR
+  S1["<b>1 Embed the question</b><br/>corpus model, 384 floats"]
+  S2["<b>2 Search the live snapshot</b><br/>status = 'live' is the pointer<br/>cosine, k = 5, tenant filter inside"]
+  S3["<b>3 Assemble the context</b><br/>answer-v1, rank order"]
+  S4["<b>4 Generate</b><br/>cairn/extractive@0, or an endpoint"]
+  S5["<b>5 Write the Request row</b><br/>every version, chunk ids, hashes, cost"]
+  S6["<b>6 Return the answer</b><br/>never an answer without its row"]
+  S1 --> S2 --> S3 --> S4 --> S5 --> S6
+
+  classDef box fill:#ffffff,stroke:#c7c7c7,stroke-width:1.25px,color:#1f1f1f;
+  classDef accent fill:#e8effd,stroke:#2563eb,stroke-width:2px,color:#1f1f1f;
+  class S1,S2,S3,S4,S6 box;
+  class S5 accent;
+  linkStyle 4 stroke:#2563eb,stroke-width:1.5px;

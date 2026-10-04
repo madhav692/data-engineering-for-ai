@@ -1,0 +1,13 @@
+# Build context for platform/Dockerfile (context = repository root). Only pyproject files,
+# uv.lock, packages/ and platform/ are copied; everything else is mounted at run time.
+.git
+.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/*.egg-info
+datasets
+docs
+infra
+projects
+.env
