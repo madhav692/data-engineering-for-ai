@@ -36,3 +36,7 @@ sections = { schemas = ["cairn_schemas"] }
 [tool.pytest.ini_options]
 testpaths = ["packages/schemas/tests", "platform/tests"]
 addopts = "-q"
+filterwarnings = [
+  # fastembed asks huggingface_hub for progress bars; the api container disables them by env var
+  "ignore:Cannot enable progress bars:UserWarning",
+]
