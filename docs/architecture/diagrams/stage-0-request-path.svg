@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" width="760" height="330" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" role="img" aria-labelledby="title">
+  <title id="title">The request path at Stage 0: six steps, the fifth before the sixth</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#9a9a9a"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect width="760" height="330" fill="#ffffff"/>
+  <text x="24" y="28" font-size="15" font-weight="600" fill="#1f1f1f">The request path: six steps, the fifth before the sixth</text>
+
+  <!-- steps, row 1 -->
+  <g>
+    <rect x="24" y="56" width="216" height="76" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="36" y="78" font-size="13" font-weight="600" fill="#1f1f1f">1  Embed the question</text>
+    <text x="36" y="96" fill="#6b6b6b">corpus model bge-small-en v1.5,</text>
+    <text x="36" y="112" fill="#6b6b6b">one vector of 384 floats</text>
+  </g>
+  <g>
+    <rect x="272" y="56" width="216" height="76" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="284" y="78" font-size="13" font-weight="600" fill="#1f1f1f">2  Search the live snapshot</text>
+    <text x="284" y="96" fill="#6b6b6b">status = 'live' is the pointer; cosine,</text>
+    <text x="284" y="112" fill="#6b6b6b">k = 5, tenant filter inside the query</text>
+  </g>
+  <g>
+    <rect x="520" y="56" width="216" height="76" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="532" y="78" font-size="13" font-weight="600" fill="#1f1f1f">3  Assemble the context</text>
+    <text x="532" y="96" fill="#6b6b6b">answer-v1 template, chunks in rank</text>
+    <text x="532" y="112" fill="#6b6b6b">order, document › heading on each</text>
+  </g>
+
+  <!-- steps, row 2 (right to left) -->
+  <g>
+    <rect x="520" y="172" width="216" height="76" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="532" y="194" font-size="13" font-weight="600" fill="#1f1f1f">4  Generate</text>
+    <text x="532" y="212" fill="#6b6b6b">cairn/extractive@0 (the top chunk)</text>
+    <text x="532" y="228" fill="#6b6b6b">or any OpenAI-compatible endpoint</text>
+  </g>
+  <g>
+    <rect x="272" y="172" width="216" height="76" rx="8" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="2"/>
+    <text x="284" y="194" font-size="13" font-weight="600" fill="#1f1f1f">5  Write the Request row</text>
+    <text x="284" y="212" fill="#1f1f1f">every version used; chunk ids and</text>
+    <text x="284" y="228" fill="#1f1f1f">text hashes; tokens, cost, latency</text>
+  </g>
+  <g>
+    <rect x="24" y="172" width="216" height="76" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="36" y="194" font-size="13" font-weight="600" fill="#1f1f1f">6  Return the answer</text>
+    <text x="36" y="212" fill="#6b6b6b">request_id, answer, citations, latency</text>
+    <text x="36" y="228" fill="#6b6b6b">never an answer without its row</text>
+  </g>
+
+  <!-- flow -->
+  <g fill="none" stroke="#9a9a9a" stroke-width="1.25">
+    <path d="M240 94H272" marker-end="url(#arrow)"/>
+    <path d="M488 94H520" marker-end="url(#arrow)"/>
+    <path d="M628 132V172" marker-end="url(#arrow)"/>
+    <path d="M520 210H488" marker-end="url(#arrow)"/>
+  </g>
+  <path d="M272 210H240" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-accent)"/>
+
+  <!-- the stores each step touches (dashed: observation / read) -->
+  <g fill="none" stroke="#d4d4d4" stroke-width="1.25" stroke-dasharray="4 4">
+    <path d="M300 132V148H256V268"/>
+    <path d="M380 248V268"/>
+  </g>
+  <g>
+    <rect x="24" y="268" width="712" height="40" rx="8" fill="#f4f4f4" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="36" y="292" fill="#6b6b6b">postgres: step 2 reads index_snapshots and the live idx_… table · step 5 inserts into requests · nothing is cached</text>
+  </g>
+
+  <text x="24" y="324" fill="#6b6b6b" font-size="10.5">The Request model will not construct without every lineage field, so the handler cannot forget one. The contract does the remembering.</text>
+</svg>

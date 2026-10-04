@@ -1,0 +1,23 @@
+# Golden set "small": 20 questions over datasets/small plus the series' own docs. One JSON object per
+# line: the question, and the documents (as "<source_id>/<path within the source>") whose chunks count
+# as a hit for recall@k. Lines starting with # are ignored. Changing any line changes the set's version.
+{"question": "How does Iceberg hidden partitioning work?", "expected": ["iceberg-docs/partitioning.md"]}
+{"question": "What problems does Hive-style partitioning have that Iceberg avoids?", "expected": ["iceberg-docs/partitioning.md"]}
+{"question": "How does partition evolution work in Iceberg?", "expected": ["iceberg-docs/evolution.md"]}
+{"question": "Which schema evolution changes are supported, and are they free of side effects?", "expected": ["iceberg-docs/evolution.md", "iceberg-docs/schemas.md"]}
+{"question": "How do concurrent writers commit safely with optimistic concurrency?", "expected": ["iceberg-docs/reliability.md", "iceberg-docs/format/spec.md"]}
+{"question": "How does Iceberg plan a scan and skip data files using metadata?", "expected": ["iceberg-docs/performance.md", "iceberg-docs/format/spec.md"]}
+{"question": "How do I expire old snapshots and why should I?", "expected": ["iceberg-docs/maintenance.md", "iceberg-docs/spark-procedures.md"]}
+{"question": "How do I remove orphan files from a table location?", "expected": ["iceberg-docs/maintenance.md", "iceberg-docs/spark-procedures.md"]}
+{"question": "How do I compact small data files?", "expected": ["iceberg-docs/maintenance.md", "iceberg-docs/spark-procedures.md"]}
+{"question": "What are branches and tags on an Iceberg table used for?", "expected": ["iceberg-docs/branching.md"]}
+{"question": "How do I run a time travel query in Spark SQL?", "expected": ["iceberg-docs/spark-queries.md"]}
+{"question": "How do I inspect a table's history and snapshots from Spark?", "expected": ["iceberg-docs/spark-queries.md"]}
+{"question": "What is the difference between copy-on-write and merge-on-read for deletes?", "expected": ["iceberg-docs/configuration.md", "iceberg-docs/spark-writes.md", "iceberg-docs/format/spec.md"]}
+{"question": "How do I write to a branch from Spark?", "expected": ["iceberg-docs/spark-writes.md", "iceberg-docs/branching.md"]}
+{"question": "What table properties control the default file format and target file size?", "expected": ["iceberg-docs/configuration.md"]}
+{"question": "What is a manifest list and what does it store?", "expected": ["iceberg-docs/format/spec.md"]}
+{"question": "What are position deletes and equality deletes?", "expected": ["iceberg-docs/format/spec.md"]}
+{"question": "What is the Puffin file format for?", "expected": ["iceberg-docs/format/puffin-spec.md"]}
+{"question": "What are the seven subsystems of the Cairn reference architecture?", "expected": ["docs-series/architecture/reference.md", "docs-series/adr/0001-seven-subsystems.md"]}
+{"question": "Why are the data contracts defined as Pydantic models?", "expected": ["docs-series/adr/0002-pydantic-single-source.md"]}

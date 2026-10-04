@@ -1,0 +1,29 @@
+%% Cairn: seven subsystems, one loop back to the lakehouse.
+%% Editable source; cairn.svg is the hand-tuned export used by A2 (Fig 1) and the root README.
+%% Render: https://mermaid.live or `npx -y @mermaid-js/mermaid-cli -i cairn.mmd -o preview.svg`
+flowchart LR
+  I["<b>Ingestion and registry</b><br/>PDF, web, GitHub, tickets<br/>CDC: Debezium + Kafka<br/>content-hash IDs, registry"]
+  L["<b>Lakehouse</b><br/>Iceberg on S3-compatible storage<br/>raw, parsed, chunks, vectors<br/>snapshots = dataset versions"]
+  D["<b>Derivation</b><br/>parse, chunk, dedup, embed<br/>Ray or Spark; Dagster<br/>model-versioned outputs"]
+  X["<b>Indexes</b><br/>Qdrant (vector), OpenSearch<br/>Redis online features<br/>sync + reconciliation jobs"]
+  S["<b>Serving and lineage</b><br/>FastAPI; hybrid retrieval<br/>rerank, context budget<br/>request log, replay"]
+  F["<b>Feedback and evaluation</b><br/>events → Kafka → Iceberg<br/>golden sets, eval gates<br/>training data, A/B router"]
+  O["<b>Observability and cost</b><br/>OTel → Kafka → ClickHouse → Grafana · token ledger<br/>freshness, drift and quality monitors · observes every subsystem"]
+
+  I --> L --> D --> X --> S
+  S -- "users" --> F
+  F -- "logs, feedback and eval data return" --> L
+  O -.-> I
+  O -.-> L
+  O -.-> D
+  O -.-> X
+  O -.-> S
+  O -.-> F
+
+  classDef box fill:#ffffff,stroke:#c7c7c7,stroke-width:1.25px,color:#1f1f1f;
+  classDef truth fill:#e8effd,stroke:#2563eb,stroke-width:2px,color:#1f1f1f;
+  classDef band fill:#f4f4f4,stroke:#c7c7c7,stroke-width:1.25px,color:#1f1f1f;
+  class I,D,X,S,F box;
+  class L truth;
+  class O band;
+  linkStyle 6 stroke:#2563eb,stroke-width:1.5px;

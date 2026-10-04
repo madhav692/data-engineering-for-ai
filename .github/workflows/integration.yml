@@ -1,0 +1,81 @@
+name: integration
+
+# Stage 0's promise, checked on every change to the platform: the core profile comes up, the small
+# tier ingests, the first answer arrives, and the thirteen seam tests pass against real containers.
+# The time from `make start` to the first answer is written to the job summary.
+
+on:
+  push:
+    branches: [main]
+    paths: ["platform/**", "infra/**", "packages/**", "datasets/**", "Makefile", "uv.lock", ".github/workflows/integration.yml"]
+  pull_request:
+    paths: ["platform/**", "infra/**", "packages/**", "datasets/**", "Makefile", "uv.lock", ".github/workflows/integration.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stage-0:
+    name: stage 0 (compose up, ingest, ask, seam tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash  # GitHub's bash default sets -e and -o pipefail, so `make x | tee` fails the step
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Start the core profile (postgres, seaweedfs, api)
+        run: |
+          T0=$SECONDS
+          make start
+          echo "START_SECONDS=$((SECONDS - T0))" >> "$GITHUB_ENV"
+
+      - name: Ingest the small tier, build the index, ask the first question
+        run: |
+          T0=$SECONDS
+          make ingest | tee ingest.log
+          make build-index | tee build.log
+          make ask Q="How does Iceberg hidden partitioning work?" | tee ask.log
+          echo "ANSWER_SECONDS=$((SECONDS - T0))" >> "$GITHUB_ENV"
+
+      - name: Replay the first request and check lag
+        run: |
+          REQ=$(grep -o 'req_[0-9a-f]*' ask.log | head -1)
+          make replay REQ="$REQ"
+          make lag
+
+      - name: Golden set
+        run: make eval | tee eval.log
+
+      - name: Platform suite (16 unit tests, 13 seam tests) in the api container
+        run: make test
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Stage 0 on ubuntu-latest"
+            echo
+            echo "| Measure | Seconds |"
+            echo "| --- | --- |"
+            echo "| make start (image build, pulls, model download, healthy) | ${START_SECONDS:-n/a} |"
+            echo "| make ingest + build-index + first answer | ${ANSWER_SECONDS:-n/a} |"
+            echo
+            echo '```'
+            grep -E '^(source|derivation|index|snapshot|eval) ' ingest.log build.log eval.log 2>/dev/null | sed 's/^[^:]*://'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Api logs on failure
+        if: failure()
+        run: docker compose --project-directory . -f infra/compose/base.yml --profile core logs api | tail -200
+
+      - name: Tear down
+        if: always()
+        run: make down

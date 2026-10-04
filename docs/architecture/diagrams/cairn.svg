@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" width="760" height="420" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" role="img" aria-labelledby="title">
+  <title id="title">Cairn: seven subsystems, one loop back to the lakehouse</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#9a9a9a"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect width="760" height="420" fill="#ffffff"/>
+  <text x="24" y="28" font-size="15" font-weight="600" fill="#1f1f1f">Cairn: seven subsystems, one loop back to the lakehouse</text>
+
+  <!-- data flow -->
+  <g fill="none" stroke="#9a9a9a" stroke-width="1.25">
+    <path d="M224 110H280" marker-end="url(#arrow)"/>
+    <path d="M480 110H536" marker-end="url(#arrow)"/>
+    <path d="M636 156V196" marker-end="url(#arrow)"/>
+    <path d="M536 242H480" marker-end="url(#arrow)"/>
+    <path d="M280 242H224" marker-end="url(#arrow)"/>
+  </g>
+  <!-- the loop back to the lakehouse -->
+  <path d="M124 196V176H380V156" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-accent)"/>
+  <!-- observability watches every subsystem -->
+  <g fill="none" stroke="#d4d4d4" stroke-width="1.25" stroke-dasharray="4 4">
+    <path d="M124 332V288"/>
+    <path d="M380 332V288"/>
+    <path d="M636 332V288"/>
+  </g>
+
+  <!-- row 1 -->
+  <g>
+    <rect x="24" y="64" width="200" height="92" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="124" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">Ingestion and registry</text>
+    <text x="124" y="108" text-anchor="middle" fill="#6b6b6b">PDF, web, GitHub, tickets</text>
+    <text x="124" y="124" text-anchor="middle" fill="#6b6b6b">CDC: Debezium + Kafka</text>
+    <text x="124" y="140" text-anchor="middle" fill="#6b6b6b">content-hash IDs, registry</text>
+  </g>
+  <g>
+    <rect x="280" y="64" width="200" height="92" rx="8" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="2"/>
+    <text x="380" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">Lakehouse</text>
+    <text x="380" y="108" text-anchor="middle" fill="#1f1f1f">Iceberg on S3-compatible storage</text>
+    <text x="380" y="124" text-anchor="middle" fill="#1f1f1f">raw, parsed, chunks, vectors</text>
+    <text x="380" y="140" text-anchor="middle" fill="#1f1f1f">snapshots = dataset versions</text>
+  </g>
+  <g>
+    <rect x="536" y="64" width="200" height="92" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="636" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">Derivation</text>
+    <text x="636" y="108" text-anchor="middle" fill="#6b6b6b">parse, chunk, dedup, embed</text>
+    <text x="636" y="124" text-anchor="middle" fill="#6b6b6b">Ray or Spark; Dagster</text>
+    <text x="636" y="140" text-anchor="middle" fill="#6b6b6b">model-versioned outputs</text>
+  </g>
+
+  <!-- row 2 -->
+  <g>
+    <rect x="536" y="196" width="200" height="92" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="636" y="220" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">Indexes</text>
+    <text x="636" y="240" text-anchor="middle" fill="#6b6b6b">Qdrant (vector), OpenSearch</text>
+    <text x="636" y="256" text-anchor="middle" fill="#6b6b6b">Redis online features</text>
+    <text x="636" y="272" text-anchor="middle" fill="#6b6b6b">sync + reconciliation jobs</text>
+  </g>
+  <g>
+    <rect x="280" y="196" width="200" height="92" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="380" y="220" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">Serving and lineage</text>
+    <text x="380" y="240" text-anchor="middle" fill="#6b6b6b">FastAPI; hybrid retrieval</text>
+    <text x="380" y="256" text-anchor="middle" fill="#6b6b6b">rerank, context budget</text>
+    <text x="380" y="272" text-anchor="middle" fill="#6b6b6b">request log, replay</text>
+  </g>
+  <g>
+    <rect x="24" y="196" width="200" height="92" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="124" y="220" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">Feedback and evaluation</text>
+    <text x="124" y="240" text-anchor="middle" fill="#6b6b6b">events → Kafka → Iceberg</text>
+    <text x="124" y="256" text-anchor="middle" fill="#6b6b6b">golden sets, eval gates</text>
+    <text x="124" y="272" text-anchor="middle" fill="#6b6b6b">training data, A/B router</text>
+  </g>
+
+  <!-- observability band -->
+  <g>
+    <rect x="24" y="332" width="712" height="64" rx="8" fill="#f4f4f4" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="380" y="356" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1f1f">Observability and cost</text>
+    <text x="380" y="376" text-anchor="middle" fill="#6b6b6b">OTel → Kafka → ClickHouse → Grafana · token ledger · freshness, drift and quality monitors · observes every subsystem</text>
+  </g>
+
+  <text x="252" y="232" text-anchor="middle" fill="#6b6b6b">users</text>
+  <text x="160" y="171" fill="#6b6b6b">logs, feedback and eval data return</text>
+</svg>
