@@ -3,7 +3,7 @@
 %% Render: https://mermaid.live or `npx -y @mermaid-js/mermaid-cli -i cairn.mmd -o preview.svg`
 flowchart LR
   I["<b>Ingestion and registry</b><br/>PDF, web, GitHub, tickets<br/>CDC: Debezium + Kafka<br/>content-hash IDs, registry"]
-  L["<b>Lakehouse</b><br/>Iceberg on S3-compatible storage<br/>raw, parsed, chunks, vectors<br/>snapshots = dataset versions"]
+  L["<b>Lakehouse</b><br/>Iceberg on S3 or MinIO<br/>raw, parsed, chunks, vectors<br/>snapshots = dataset versions"]
   D["<b>Derivation</b><br/>parse, chunk, dedup, embed<br/>Ray or Spark; Dagster<br/>model-versioned outputs"]
   X["<b>Indexes</b><br/>Qdrant (vector), OpenSearch<br/>Redis online features<br/>sync + reconciliation jobs"]
   S["<b>Serving and lineage</b><br/>FastAPI; hybrid retrieval<br/>rerank, context budget<br/>request log, replay"]
