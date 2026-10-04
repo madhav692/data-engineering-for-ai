@@ -1,7 +1,7 @@
 # Code owners: GitHub requests a review from these handles on every pull request
 # that touches the matching paths. Replace the placeholder with your handle.
-*                       @Madhav692
-/packages/schemas/      @Madhav692
-/platform/              @Madhav692
-/infra/                 @Madhav692
-/docs/adr/              @Madhav692
+*                       @madhav692
+/packages/schemas/      @madhav692
+/platform/              @madhav692
+/infra/                 @madhav692
+/docs/adr/              @madhav692
