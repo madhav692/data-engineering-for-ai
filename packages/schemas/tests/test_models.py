@@ -18,6 +18,7 @@ from cairn_schemas.models import (
     IndexSnapshot,
     Request,
 )
+
 from tests.conftest import (
     EMBED_MODEL,
     NOW,

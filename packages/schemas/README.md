@@ -2,8 +2,9 @@
 
 The data contracts of the Cairn platform: seven Pydantic models that are the single source
 of truth, and generators that emit the same contracts as **Avro** (Kafka), **Iceberg DDL**
-(the lakehouse) and **JSON Schema** (the API). Series article: A2, *Reference Architecture:
-Seven Subsystems and the Contracts Between Them*.
+(the lakehouse), **JSON Schema** (the API) and **Postgres DDL** (the Stage 0 lakehouse
+stand-in, ADR-0003). Series articles: A2, *Reference Architecture: Seven Subsystems and the
+Contracts Between Them*; A3, *Cairn Stage 0*.
 
 ## What is here
 
@@ -14,11 +15,12 @@ packages/schemas/
 │   ├── ids.py           derived identifiers: doc_id, chunk_id, index_snapshot_id, raw_object_key, uuid7
 │   ├── versions.py      EmbeddingModelId, ModelRef, VersionTag, Sha256 value types
 │   ├── models.py        Document, Chunk, Embedding, IndexSnapshot, Request, Feedback, EvalRun
-│   └── generate/        _fields.py (type walker), avro.py, iceberg.py, jsonschema.py, __main__.py
+│   └── generate/        _fields.py (type walker), avro.py, iceberg.py, jsonschema.py, postgres.py, __main__.py
 ├── generated/           committed outputs; `make check-schemas` fails CI if they drift
 │   ├── avro/<table>.avsc
 │   ├── iceberg/<table>.sql
 │   ├── jsonschema/<Model>.json
+│   ├── postgres/<table>.sql   applied by `cairn migrate` at Stage 0
 │   └── manifest.json    table, primary key, lineage fields, partition spec, per model
 └── tests/               ids, model invariants, contracts (C1, C3, C6), generators
 ```

@@ -1,6 +1,6 @@
 """Walk a Pydantic model into a small, generator-neutral description of its fields.
 
-The three generators (Avro, Iceberg DDL, JSON Schema) all read this so the mapping from
+The four generators (Avro, Iceberg DDL, JSON Schema, Postgres DDL) all read this so the mapping from
 Python types to storage types lives in exactly one place.
 """
 

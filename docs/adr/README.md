@@ -8,6 +8,7 @@ supersedes it. Articles summarise ADRs; the ADR is the artifact.
 | --- | --- | --- | --- |
 | [0001](0001-seven-subsystems.md) | Seven subsystems, defined by their guarantees | Accepted | A2 |
 | [0002](0002-pydantic-single-source.md) | Pydantic models as the single source of the contracts | Accepted | A2 |
+| [0003](0003-postgres-as-stage-0-lakehouse.md) | Postgres stands in for the lakehouse at Stage 0 | Accepted | A3 |
 
 ## Template
 

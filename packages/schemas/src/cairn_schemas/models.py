@@ -5,7 +5,7 @@ The lineage spine (docs/architecture/diagrams/lineage-spine.svg):
     Document -> Chunk -> Embedding -> IndexSnapshot -> Request -> Feedback -> EvalRun
 
 Each model declares its table, primary key, lineage fields and partition spec as class
-variables; the generators turn those into Avro, Iceberg DDL and JSON Schema, and the
+variables; the generators turn those into Avro, Iceberg DDL, JSON Schema and Postgres DDL, and the
 tests prove the invariants named in docs/architecture/reference.md.
 """
 
@@ -46,6 +46,7 @@ Vector = Annotated[
         json_schema_extra={
             "iceberg_type": "ARRAY<FLOAT>",
             "avro_type": {"type": "array", "items": "float"},
+            "postgres_type": "REAL[]",
         },
     ),
 ]

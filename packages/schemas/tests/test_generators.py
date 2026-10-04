@@ -10,9 +10,9 @@ import pytest
 import sqlglot
 from jsonschema import Draft202012Validator
 
-from cairn_schemas.generate import avro, iceberg, jsonschema
+from cairn_schemas.generate import avro, iceberg, jsonschema, postgres
 from cairn_schemas.generate.__main__ import check, render_all
-from cairn_schemas.models import ALL_MODELS, Chunk, Embedding, Request
+from cairn_schemas.models import ALL_MODELS, Chunk, Document, Embedding, Request
 
 GENERATED = Path(__file__).resolve().parents[1] / "generated"
 
@@ -55,6 +55,43 @@ def test_type_overrides_reach_every_target():
     assert "vector ARRAY<FLOAT>" in iceberg.render(Embedding)
     fields = {f["name"]: f for f in avro.avro_schema(Embedding)["fields"]}
     assert fields["vector"]["type"] == {"type": "array", "items": "float"}
+    assert "vector REAL[] NOT NULL" in postgres.render(Embedding)
+
+
+@pytest.mark.parametrize("model", ALL_MODELS, ids=lambda m: m.__name__)
+def test_postgres_ddl_parses(model):
+    """The fourth target (Stage 0, ADR-0003): one CREATE TABLE plus comments per model."""
+    ddl = postgres.render(model)
+    statements = sqlglot.parse(ddl, read="postgres")
+    assert statements and statements[0] is not None
+    assert f"CREATE TABLE IF NOT EXISTS {model.TABLE} (" in ddl
+    assert f"PRIMARY KEY ({', '.join(model.PRIMARY_KEY)})" in ddl
+    assert f"COMMENT ON TABLE {model.TABLE} IS" in ddl
+
+
+def test_postgres_type_mapping():
+    """Scalars map to native types; maps and nested records become JSONB; enums get a CHECK."""
+    ddl = postgres.render(Request)
+    assert "received_at TIMESTAMPTZ NOT NULL" in ddl
+    assert "query_text TEXT," in ddl  # nullable: no NOT NULL
+    assert "filters JSONB NOT NULL DEFAULT '{}'::JSONB" in ddl
+    assert "retrieved_chunks JSONB NOT NULL DEFAULT '[]'::JSONB" in ddl
+    assert "llm_params JSONB NOT NULL" in ddl
+    assert "cost_usd DOUBLE PRECISION NOT NULL" in ddl
+    assert "tokens_out BIGINT NOT NULL DEFAULT 0" in ddl
+    assert "status TEXT NOT NULL CHECK (status IN ('ok', 'error', 'timeout'))" in ddl
+    doc_ddl = postgres.render(Document)
+    assert "acl TEXT[] NOT NULL DEFAULT '{}'::TEXT[]" in doc_ddl
+    assert (
+        "status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'deleted'))" in doc_ddl
+    )
+    assert "-- Iceberg partition spec, not applied here: source_id, days(fetched_at)." in doc_ddl
+
+
+def test_postgres_spine_script_has_every_table_in_order():
+    script = postgres.render_all_in_spine_order(ALL_MODELS)
+    positions = [script.index(f"CREATE TABLE IF NOT EXISTS {m.TABLE} (") for m in ALL_MODELS]
+    assert positions == sorted(positions)
 
 
 def test_nullable_and_default_handling():

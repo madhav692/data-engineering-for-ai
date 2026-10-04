@@ -1,7 +1,7 @@
 [project]
 name = "cairn-schemas"
 version = "0.1.0"
-description = "Data contracts for Cairn: Pydantic models that generate Avro, Iceberg DDL and JSON Schema."
+description = "Data contracts for Cairn: Pydantic models that generate Avro, Iceberg DDL, JSON Schema and Postgres DDL."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"

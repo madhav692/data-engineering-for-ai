@@ -13,6 +13,7 @@ import fastavro
 
 from cairn_schemas.generate import avro
 from cairn_schemas.models import Chunk, Document, Request
+
 from tests.conftest import (
     POLICY_V1,
     POLICY_V2,
