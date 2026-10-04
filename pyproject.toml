@@ -11,7 +11,7 @@ license = "Apache-2.0"
 package = false
 
 [tool.uv.workspace]
-members = ["packages/*"]
+members = ["packages/*", "platform"]
 
 [dependency-groups]
 dev = [
@@ -28,8 +28,11 @@ extend-exclude = ["packages/schemas/generated"]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["cairn_schemas", "tests"]
+known-first-party = ["cairn", "tests", "support"]
+# The contracts package gets its own import block between third-party and the platform.
+section-order = ["future", "standard-library", "third-party", "schemas", "first-party", "local-folder"]
+sections = { schemas = ["cairn_schemas"] }
 
 [tool.pytest.ini_options]
-testpaths = ["packages/schemas/tests"]
+testpaths = ["packages/schemas/tests", "platform/tests"]
 addopts = "-q"

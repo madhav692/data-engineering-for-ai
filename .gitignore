@@ -5,7 +5,6 @@ __pycache__/
 dist/
 build/
 .venv/
-.python-version
 
 # Tooling caches
 .pytest_cache/
@@ -20,6 +19,9 @@ build/
 # Local secrets and environment
 .env
 *.local
+
+# Local object store when running with CAIRN_OBJECT_STORE=fs outside Docker
+/objects/
 
 # Never ignore the generated contracts: they are committed on purpose.
 !packages/schemas/generated/
