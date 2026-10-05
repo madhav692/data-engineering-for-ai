@@ -4,7 +4,10 @@ SHELL := /bin/bash
 # ---- Developer toolchain (host): uv, ruff, pytest -------------------------------------------
 
 UV ?= uv
-RUN := $(UV) run
+# `uv run` alone syncs only the workspace root (a container, not a package); these flags make every
+# host target install the whole workspace and all dependency groups first, so a fresh clone works
+# without `make setup`.
+RUN := $(UV) run --all-packages --all-groups
 SCHEMAS_OUT := packages/schemas/generated
 
 # ---- Cairn Stage 0 (containers): everything below `start` runs through docker compose --------
@@ -128,4 +131,4 @@ psql: ## psql on the cairn database
 test: ## The platform suite against the running containers: real Postgres, real S3, real model
 	$(COMPOSE) up -d --wait
 	$(EXEC) -e CAIRN_TEST_EMBEDDER=fastembed -e CAIRN_TEST_S3_ENDPOINT=http://seaweedfs:8333 \
-	  api pytest platform/tests -q -p no:cacheprovider
+	  api pytest platform/tests -p no:cacheprovider
