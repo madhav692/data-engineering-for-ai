@@ -19,7 +19,7 @@ Every one of the seven subsystems from A2, present as code and as thin as its co
 
 Also: the fourth generator target in `packages/schemas` (`generate/postgres.py`), ADR-0003, the
 small dataset tier (`datasets/small/`), the golden set (`datasets/golden/small.jsonl`), the
-`integration.yml` workflow, and `make start | ingest | build-index | ask | replay | test`.
+`integration.yml` workflow, and `make start | ingest | build-index | ask | requests | replay | test`.
 
 ## The invariant
 
@@ -43,34 +43,39 @@ logged snapshot and the chunk ids are compared.
 
 ## Measured numbers
 
-Two columns. **Sandbox** numbers were measured while building the stage, on a 2-vCPU Intel Xeon
-2.8 GHz container with 7 GB of memory and no Docker (embedded Postgres 16.2 + pgvector 0.6.2 via
-`pgserver`, filesystem object store, the real fastembed model). **Laptop** numbers are the ones
-the article quotes; fill them in from a clean clone on the machine the article names, using the
-"How" column.
+Measured on 2026-10-05 on a MacBook Pro (Apple M3 Pro, 12 cores, 36 GB) running macOS 27.0.1,
+Docker Desktop 29.4.0 with a 12-CPU, 17.5 GiB VM, Compose 5.1.2, from an empty directory with no
+Cairn images and no build cache: one run of `scripts/measure-stage-0.sh --cold` at commit
+`59b5f9b`, which clones the repository, times the reader's sequence step by step and then collects
+every row below. These are the numbers A3 quotes.
 
-| Measure | Sandbox | Laptop | How |
-| --- | --- | --- | --- |
-| Clone to first answer, cold (no cached images) | n/a (no Docker) | | `time (git clone … && make start && make ingest && make build-index && make ask Q=…)` |
-| Image pulls | n/a | | `docker images` (pgvector, seaweedfs, cairn-api) |
-| Embedding model download, once | 65 MB (`BAAI/bge-small-en-v1.5`, quantised ONNX) | | size of the `model-cache` volume |
-| Corpus: documents · chunks · tokens · raw bytes | 55 · 1,244 · 262,667 · 1,013,202 B | | `cairn stats` |
-| Ingest + derivation, cold | 257.6 s (dominated by embedding) | | printed by `cairn ingest` |
-| Embedding throughput, CPU | 4.9 chunks/s (2 vCPU) | | printed by `cairn ingest` |
-| `make build-index` | 0.3 s for 1,244 rows | | printed by `cairn build-index` |
-| Retrieval latency, 21 requests, k = 5 | P50 12 ms · P95 25 ms | | `cairn_request_latency_ms` on `/metrics` |
-| Golden-set recall@5 · MRR (20 questions) | 0.95 · 0.76 | | `cairn eval` |
-| Database size after ingest + 21 requests | 18 MB | | `cairn stats` |
-| Memory at rest and during ingest | n/a | | `docker stats --no-stream` |
-| Platform suite (16 unit + 13 seam tests), hashing embedder | 4.2 s | | `make test-platform` |
-| Seam tests, real model | 8.6 s | | `make test` (laptop: in the api container) |
+| Measure | Measured | How |
+| --- | --- | --- |
+| Clone to first answer, cold (no images, no build cache) | 111 s: clone 2 s · `make start` 49 s (three image pulls, the api image build, the model download, health checks) · `make ingest` 59 s · `make build-index` under 1 s · `make ask` 1 s | the script's wall clock per step |
+| Image sizes | `pgvector/pgvector:pg16` 466 MB · `chrislusf/seaweedfs:4.48` 502 MB · `cairn-api:stage-0` 469 MB (built locally); 1.44 GB together | `docker images` |
+| Embedding model download, once | 65 MB (`BAAI/bge-small-en-v1.5`, quantised ONNX; 66,465,124 B) | `du -sh /models` in the api container |
+| Corpus: documents · chunks · tokens · raw bytes | 55 · 1,246 · 263,458 · 1,015,674 B | `cairn stats` |
+| Ingest + derivation, cold | 59 s wall clock; the derivation step 49.0 s, dominated by embedding | printed by `cairn ingest` |
+| Embedding throughput, CPU | 26.9 chunks/s with the api container at about 11.5 cores busy | printed by `cairn ingest`; `docker stats` |
+| `make build-index` | 0.2 s for 1,246 rows | printed by `cairn build-index` |
+| Retrieval latency, 21 requests, k = 5 | P50 6 ms · P95 14 ms | `cairn_request_latency_ms` on `/metrics` |
+| Golden-set recall@5 · MRR (20 questions) | 0.95 · 0.76 | `cairn eval` |
+| Database size after ingest + 21 requests | 18 MB | `cairn stats` |
+| Memory at rest | api 202 MiB · seaweedfs 84 MiB · postgres 27 MiB, about 314 MiB together | `docker stats --no-stream` after `make start` |
+| Memory during ingest | api peaks at 1.76 GiB (the ONNX runtime on all 12 cores); seaweedfs 115 MiB; postgres 38 MiB | `docker stats` sampled every 10 s |
+| Platform suite (16 unit + 13 seam tests), hashing embedder, embedded Postgres, on the host | 29 passed in 4.8 s | `make test-platform` |
+| The same suite in the api container: real model, compose Postgres, SeaweedFS S3 | 29 passed; 5 s wall clock for `make test`, including the compose health wait | `make test` |
 
-Notes on the sandbox run: the one golden-set miss is "What are branches and tags on an Iceberg
-table used for?", for which retrieval ranked the table spec's *Snapshot References* section (which
-defines branches and tags) above `branching.md`; the set says `branching.md`, so it is a miss. Twenty
-questions is a smoke test. Retrieval of the article's question returned `partitioning.md ›
-Iceberg's hidden partitioning` at rank 1 with cosine similarity 0.843; replay reproduced 5 of 5
-chunk ids in the same order and the response hash matched.
+Notes on the run. The one golden-set miss is "What are branches and tags on an Iceberg table used
+for?": retrieval ranks the table spec's *Snapshot References* section, which defines branches and
+tags, above `branching.md`, and the set says `branching.md`, so it is a miss. Thirteen of the twenty
+questions hit at rank 1. Twenty questions is a smoke test, not an evaluation. The article's question
+returned `iceberg-docs/partitioning.md › Partitioning > What does Iceberg do differently? >
+Iceberg's hidden partitioning` at rank 1 with cosine similarity 0.843 (request
+`req_01a10c37a77476f2ac3c88da814aab9f`, snapshot `idx_8c8f4429e749c165b062f09c07a0c3ff`); replay
+reproduced 5 of 5 chunk ids in the same order and the response hash matched. For scale: the same
+ingest on a 2-vCPU Intel Xeon container without Docker (the build sandbox) ran at 4.9 chunks/s and
+took 258 s. Embedding is CPU-bound and scales with cores; everything else in Stage 0 is seconds.
 
 ## Failure drills
 
