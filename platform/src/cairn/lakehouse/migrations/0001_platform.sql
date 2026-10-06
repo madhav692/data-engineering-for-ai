@@ -14,6 +14,9 @@ CREATE INDEX IF NOT EXISTS chunks_by_doc ON chunks (doc_id, content_sha256);
 CREATE INDEX IF NOT EXISTS chunks_by_version ON chunks (parser_version, chunker_version);
 CREATE INDEX IF NOT EXISTS embeddings_by_model ON embeddings (embedding_model_id);
 CREATE INDEX IF NOT EXISTS requests_by_received_at ON requests (received_at);
+-- A4: "which requests saw this chunk" as a containment query over the logged context,
+-- WHERE retrieved_chunks @> '[{"chunk_id": "chk_..."}]'.
+CREATE INDEX IF NOT EXISTS requests_by_chunk ON requests USING GIN (retrieved_chunks jsonb_path_ops);
 CREATE INDEX IF NOT EXISTS index_snapshots_live ON index_snapshots (index_name) WHERE status = 'live';
 
 -- Contract C7: a feedback producer's dedup_key is unique per tenant, so a redelivery is a no-op.

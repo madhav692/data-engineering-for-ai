@@ -16,4 +16,7 @@ both places:
 | Cairn: seven subsystems | `cairn.mmd` | `cairn.svg` | A2 Fig 1, root README |
 | Stage 0 deployment: three containers, one bind mount | `stage-0-deployment.mmd` | `stage-0-deployment.svg` | A3 Fig 1, root README, `platform/README.md` |
 | The request path: six steps, the fifth before the sixth | `stage-0-request-path.mmd` | `stage-0-request-path.svg` | A3 Fig 2 |
+| One request, one row: the six column groups | hand-drawn | `a4-fig1-request-row.svg` | A4 Fig 1, Open Graph image |
+| The write path: both branches end at the same INSERT | `a4-fig2-write-path.mmd` | `a4-fig2-write-path.svg` | A4 Fig 2 |
+| What joins to the request log | `a4-fig3-join-graph.mmd` | `a4-fig3-join-graph.svg` | A4 Fig 3 |
 | The pipeline that ended and the pipeline that loops | arrives with A1 | | A1 Fig 1 |

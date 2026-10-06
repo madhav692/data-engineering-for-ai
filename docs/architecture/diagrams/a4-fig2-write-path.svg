@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 352" width="760" height="352" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" role="img" aria-labelledby="title">
+  <title id="title">The write path: both branches end at the same INSERT, before the client sees anything</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#9a9a9a"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect width="760" height="352" fill="#ffffff"/>
+  <text x="24" y="28" font-size="15" font-weight="600" fill="#1f1f1f">The write path: both branches end at the same INSERT</text>
+
+  <!-- the band behind step 6 -->
+  <rect x="24" y="238" width="712" height="40" rx="6" fill="#2563eb" fill-opacity="0.08"/>
+
+  <!-- lifeline heads -->
+  <g font-size="12.5" font-weight="600" fill="#1f1f1f">
+    <rect x="40" y="48" width="100" height="30" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="90" y="68" text-anchor="middle">client</text>
+    <rect x="240" y="48" width="100" height="30" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="290" y="68" text-anchor="middle">api  /ask</text>
+    <rect x="440" y="48" width="100" height="30" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="490" y="68" text-anchor="middle">postgres</text>
+    <rect x="620" y="48" width="100" height="30" rx="8" fill="none" stroke="#c7c7c7" stroke-width="1.25"/>
+    <text x="670" y="68" text-anchor="middle">generator</text>
+  </g>
+
+  <!-- lifelines -->
+  <g fill="none" stroke="#c7c7c7" stroke-width="1" stroke-dasharray="4 4">
+    <path d="M90 78V312"/>
+    <path d="M290 78V312"/>
+    <path d="M490 78V312"/>
+    <path d="M670 78V312"/>
+  </g>
+
+  <!-- messages -->
+  <g fill="none" stroke="#9a9a9a" stroke-width="1.25">
+    <path d="M90 104H290" marker-end="url(#arrow)"/>
+    <path d="M290 132H490" marker-end="url(#arrow)"/>
+    <path d="M290 160H490" marker-end="url(#arrow)"/>
+    <path d="M290 188H670" marker-end="url(#arrow)"/>
+    <path d="M670 214H290" marker-end="url(#arrow)" stroke-dasharray="5 3"/>
+    <path d="M290 300H90" marker-end="url(#arrow)" stroke-dasharray="5 3"/>
+  </g>
+  <path d="M290 258H490" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-accent)"/>
+
+  <!-- labels -->
+  <g fill="#1f1f1f">
+    <text x="190" y="98" text-anchor="middle"><tspan font-weight="600">1</tspan>  POST /ask {question}</text>
+    <text x="390" y="126" text-anchor="middle"><tspan font-weight="600">2</tspan>  the live snapshot, then embed the question</text>
+    <text x="390" y="154" text-anchor="middle"><tspan font-weight="600">3</tspan>  top-k search against idx_&lt;snapshot&gt;</text>
+    <text x="480" y="182" text-anchor="middle"><tspan font-weight="600">4</tspan>  generate(question, context)</text>
+    <text x="480" y="208" text-anchor="middle"><tspan font-weight="600">5</tspan>  text, tokens, cost  <tspan fill="#6b6b6b">— or an exception: timeout, 5xx, connection refused</tspan></text>
+    <text x="390" y="252" text-anchor="middle"><tspan font-weight="600">6</tspan>  INSERT requests <tspan fill="#6b6b6b">— every lineage field; status ok or error; on both branches</tspan></text>
+    <text x="190" y="294" text-anchor="middle"><tspan font-weight="600">7</tspan>  200 {request_id, answer, citations}</text>
+    <text x="190" y="310" text-anchor="middle" fill="#6b6b6b">or 502 {request_id, error}</text>
+  </g>
+
+  <text x="24" y="340" fill="#6b6b6b">Step 6 happens whether step 5 succeeded or not: the row exists before the client sees anything, and the error carries the id.</text>
+</svg>

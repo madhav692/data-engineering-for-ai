@@ -26,7 +26,7 @@ LLM_ENV := -e CAIRN_LLM_BASE_URL="$(CAIRN_LLM_BASE_URL)" -e CAIRN_LLM_MODEL="$(C
 
 .PHONY: help setup schemas check-schemas test-contracts test-unit test-platform lint fmt clean \
         start stop down restart logs ps build ingest build-index ask replay feedback eval lag \
-        stats metrics shell psql test
+        stats metrics shell psql sql test
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
@@ -127,6 +127,10 @@ shell: ## A shell inside the api container
 
 psql: ## psql on the cairn database
 	$(COMPOSE) exec postgres psql -U cairn -d cairn
+
+sql: ## Run a SQL file against the cairn database: make sql FILE=docs/sql/a4-request-log.sql
+	@test -n "$(FILE)" || (echo 'usage: make sql FILE=path/to/file.sql'; exit 2)
+	$(COMPOSE) exec -T postgres psql -U cairn -d cairn -X -q < $(FILE)
 
 test: ## The platform suite against the running containers: real Postgres, real S3, real model
 	$(COMPOSE) up -d --wait
