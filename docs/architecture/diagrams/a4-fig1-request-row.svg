@@ -70,27 +70,27 @@
   <text x="24" y="250" fill="#6b6b6b">retrieved_chunks, in context order: five cells of 150 bytes, each pinning one chunk's exact text</text>
   <g font-family="SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="10.5" fill="#1f1f1f">
     <rect x="24" y="262" width="160" height="60" rx="6" fill="#f4f4f4" stroke="#c7c7c7" stroke-width="1"/>
-    <text x="34" y="280">rank 1   score 0.8427</text>
+    <text x="34" y="280">rank 1   score 0.8428</text>
     <text x="34" y="296">chk_045383c16561ac59…</text>
     <text x="34" y="312" fill="#6b6b6b">sha ea90c55b947fe1ac…</text>
 
     <rect x="202" y="262" width="160" height="60" rx="6" fill="#f4f4f4" stroke="#c7c7c7" stroke-width="1"/>
-    <text x="212" y="280">rank 2   score 0.8368</text>
+    <text x="212" y="280">rank 2   score 0.8366</text>
     <text x="212" y="296">chk_66dfb8daa07f5c1f…</text>
     <text x="212" y="312" fill="#6b6b6b">sha 07e2ba9ce6db2116…</text>
 
     <rect x="380" y="262" width="160" height="60" rx="6" fill="#f4f4f4" stroke="#c7c7c7" stroke-width="1"/>
-    <text x="390" y="280">rank 3   score 0.8326</text>
+    <text x="390" y="280">rank 3   score 0.8324</text>
     <text x="390" y="296">chk_4ce9e47dba651cb1…</text>
     <text x="390" y="312" fill="#6b6b6b">sha fea79b5cfc43ed3d…</text>
 
     <rect x="558" y="262" width="160" height="60" rx="6" fill="#f4f4f4" stroke="#c7c7c7" stroke-width="1"/>
-    <text x="568" y="280">rank 4   score 0.7875</text>
+    <text x="568" y="280">rank 4   score 0.7872</text>
     <text x="568" y="296">chk_e786deda78a27780…</text>
     <text x="568" y="312" fill="#6b6b6b">sha 2222bf31735d986b…</text>
 
     <rect x="736" y="262" width="160" height="60" rx="6" fill="#f4f4f4" stroke="#c7c7c7" stroke-width="1"/>
-    <text x="746" y="280">rank 5   score 0.7737</text>
+    <text x="746" y="280">rank 5   score 0.7739</text>
     <text x="746" y="296">chk_db3d7f124aecff06…</text>
     <text x="746" y="312" fill="#6b6b6b">sha d129c86996a08bd1…</text>
   </g>

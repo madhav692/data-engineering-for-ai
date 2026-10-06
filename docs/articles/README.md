@@ -6,4 +6,4 @@ was written from. The series index is on the site; this folder is the map from p
 | Article | Tag | Map |
 | --- | --- | --- |
 | A3 Cairn Stage 0: A Walking Skeleton of the Whole Platform in One Docker Compose | `stage-0` | `platform/CHANGES-stage-0.md` |
-| A4 The Request Log: The Most Important Table You Are Not Building | `stage-0` | [a4-request-log.md](a4-request-log.md) |
+| A4 The Request Log: The Most Important Table You Are Not Building | `a4` | [a4-request-log.md](a4-request-log.md) |

@@ -25,3 +25,4 @@ build/
 
 # Never ignore the generated contracts: they are committed on purpose.
 !packages/schemas/generated/
+a4-run-*/
