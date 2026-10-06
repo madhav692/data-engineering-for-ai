@@ -1,0 +1,13 @@
+%% A4 Fig 3: what joins to the request log. Every edge is one of the article's queries.
+flowchart LR
+    R["requests\nrequest_id · six lineage columns · retrieved_chunks[] · hashes · latency · cost · status"]
+    S["index_snapshots"]
+    C["chunks"]
+    D["latest_documents"]
+    F["feedback"]
+    E["eval_runs"]
+    R -- "index_snapshot_id  (Q2)" --> S
+    R -- "retrieved_chunks[].chunk_id  (Q1, Q5)" --> C
+    C -- "doc_id" --> D
+    F -- "request_id  (Q4)" --> R
+    E -- "config = the six lineage columns  (Q4b)" --> R

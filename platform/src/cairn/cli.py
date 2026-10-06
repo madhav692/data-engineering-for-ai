@@ -199,6 +199,13 @@ def replay(
         typer.echo(str(err), err=True)
         raise typer.Exit(1) from err
     typer.echo(replay_mod.format_report(report))
+    # Exit 1 when the row cannot be trusted or the re-run disagrees, so scripts can tell.
+    if (
+        report.inconsistent_chunks
+        or report.chunk_ids_match is False
+        or report.response_matches is False
+    ):
+        raise typer.Exit(1)
 
 
 @app.command()

@@ -1,0 +1,24 @@
+%% A4 Fig 2: the /ask write path. Both branches end at the same INSERT, before the client sees anything.
+sequenceDiagram
+    autonumber
+    participant C as client
+    participant A as api  /ask
+    participant P as postgres
+    participant E as embedder
+    participant G as generator
+    C->>A: POST /ask {question}
+    A->>P: live snapshot  (index_snapshots WHERE status = 'live')
+    A->>E: embed_query(question)
+    A->>P: top-k search against idx_<snapshot>
+    A->>G: generate(question, context)
+    alt the generator answers
+        G-->>A: text, tokens, cost
+    else it fails: timeout, 5xx, connection refused
+        G-->>A: exception  →  status = 'error'
+    end
+    A->>P: INSERT requests  (every lineage field, on both branches)
+    alt ok
+        A-->>C: 200 {request_id, answer, citations}
+    else error
+        A-->>C: 502 {request_id, error}
+    end
