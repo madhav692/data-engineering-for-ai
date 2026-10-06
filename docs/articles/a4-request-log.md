@@ -1,7 +1,8 @@
 # A4 — The Request Log: The Most Important Table You Are Not Building
 
-Written from `stage-0`. The queries and the two drills run against a Stage 0 that has answered a
-few dozen requests (`make ask`, `make eval`).
+Written from `a4`: the `stage-0` tag plus this article's follow-up (`make sql`, the `requests_by_chunk`
+index, `cairn replay`'s exit code, the figures). The queries and the two drills run against a Stage 0
+that has answered a few dozen requests (`make ask`, `make eval`); `scripts/a4-run.sh` runs the whole sequence.
 
 | Section | Where it lives |
 | --- | --- |

@@ -60,7 +60,10 @@ run_step stats-before make stats
 
 # ---- 1. the article's request ------------------------------------------------------------------------
 
-run_step ask make ask Q="$QUESTION"
+# The article's request goes through the default generator whatever the shell exports; the swap
+# (CAIRN_LLM_*) is used only for the three swap questions below.
+NOSWAP="env -u CAIRN_LLM_BASE_URL -u CAIRN_LLM_MODEL -u CAIRN_LLM_PROVIDER -u CAIRN_LLM_API_KEY"
+run_step ask $NOSWAP make ask Q="$QUESTION"
 REQ=$(grep -o 'req_[0-9a-f]*' "$RAW/ask.log" | head -1)
 if [ -z "$REQ" ]; then log "no request_id in the ask output; stopping"; exit 1; fi
 log "REQ             $REQ"
@@ -98,14 +101,19 @@ done
 
 if [ -n "${CAIRN_LLM_BASE_URL:-}" ]; then
   run_step swap-1 make ask Q="$QUESTION"
-  run_step swap-2 make ask Q="What is a manifest list and what does it store?"
-  run_step swap-3 make ask Q="How do I expire old snapshots and why should I?"
+  if grep -q 'api returned 502' "$RAW/swap-1.log"; then
+    log "!! the swap endpoint $CAIRN_LLM_BASE_URL did not answer (see above). With Ollama: ollama list, then"
+    log "!! ollama pull ${CAIRN_LLM_MODEL:-<model>}; or unset CAIRN_LLM_BASE_URL and run again. Skipping the other two."
+  else
+    run_step swap-2 make ask Q="What is a manifest list and what does it store?"
+    run_step swap-3 make ask Q="How do I expire old snapshots and why should I?"
+  fi
 fi
 
 # ---- 3. drill 1: the answer fails, the row does not ----------------------------------------------------------
 
 section "drill 1: CAIRN_LLM_BASE_URL=http://127.0.0.1:9 CAIRN_LLM_MODEL=none make ask Q=\"$DRILL_QUESTION\""
-CAIRN_LLM_BASE_URL=http://127.0.0.1:9 CAIRN_LLM_MODEL=none CAIRN_LLM_PROVIDER=openai-compatible \
+$NOSWAP CAIRN_LLM_BASE_URL=http://127.0.0.1:9 CAIRN_LLM_MODEL=none CAIRN_LLM_PROVIDER=openai-compatible \
   make ask Q="$DRILL_QUESTION" > "$RAW/drill-1-ask.log" 2>&1
 log "--- make ask: exit $?"
 filter < "$RAW/drill-1-ask.log" | tee -a "$LOG"
@@ -124,7 +132,7 @@ PSQL -c "UPDATE requests SET retrieved_chunks = jsonb_set(retrieved_chunks, '{0,
 make replay REQ="$REQ" > "$RAW/drill-2-replay.log" 2>&1
 TAMPER_STATUS=$?
 filter < "$RAW/drill-2-replay.log" | sed -n '/^context/,$p' | tee -a "$LOG"
-log "--- make replay on the tampered row: exit $TAMPER_STATUS (expected 1)"
+log "--- make replay on the tampered row: make exit $TAMPER_STATUS (non-zero expected: cairn replay exits 1, which make reports as Error 1 and returns as 2)"
 PSQL -c "UPDATE requests SET retrieved_chunks = jsonb_set(retrieved_chunks, '{0,text_sha256}', '\"$ORIG\"') WHERE request_id = '$REQ';" 2>&1 | tee -a "$LOG"
 make replay REQ="$REQ" > "$RAW/drill-2-restored.log" 2>&1
 log "--- make replay after restoring: exit $? (expected 0)"
@@ -145,8 +153,13 @@ for i in 1 2 3 4 5 6 7; do
 done
 PSQL -c "DELETE FROM requests WHERE request_id LIKE 'req_00test%';" 2>&1 | tee -a "$LOG"
 
-section "the blast-radius query uses the GIN index"
-PSQL -c "EXPLAIN (COSTS OFF) SELECT request_id FROM requests WHERE retrieved_chunks @> '[{\"chunk_id\": \"$(PSQL -At -c "SELECT retrieved_chunks->0->>'chunk_id' FROM requests WHERE request_id = '$REQ';" 2>/dev/null | tr -d '[:space:]')\"}]';" 2>&1 | tee -a "$LOG"
+section "indexes on requests, and the blast-radius query's plan"
+PSQL -c "\\di requests*" 2>&1 | tee -a "$LOG"
+TOP_CHUNK=$(PSQL -At -c "SELECT retrieved_chunks->0->>'chunk_id' FROM requests WHERE request_id = '$REQ';" 2>/dev/null | tr -d '[:space:]')
+log "-- with the planner's default: on a table this small it may prefer a sequential scan"
+PSQL -c "EXPLAIN (COSTS OFF) SELECT request_id FROM requests WHERE retrieved_chunks @> '[{\"chunk_id\": \"$TOP_CHUNK\"}]';" 2>&1 | tee -a "$LOG"
+log "-- with SET enable_seqscan = off: the index the query will use once the table is large"
+PSQL -c "SET enable_seqscan = off;" -c "EXPLAIN (COSTS OFF) SELECT request_id FROM requests WHERE retrieved_chunks @> '[{\"chunk_id\": \"$TOP_CHUNK\"}]';" 2>&1 | tee -a "$LOG"
 
 run_step lag make lag
 run_step stats-after make stats
@@ -156,7 +169,7 @@ run_step stats-after make stats
 section "summary"
 log "article request   $REQ"
 log "failed request    ${ERR_REQ:-not found}"
-log "tamper drill      replay exit $TAMPER_STATUS (1 = the row was refused, as the article says)"
+log "tamper drill      make replay exit $TAMPER_STATUS (non-zero = the row was refused, as the article says)"
 log "log               $LOG"
 log "raw output        $RAW/"
 echo

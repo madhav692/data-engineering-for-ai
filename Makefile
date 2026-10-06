@@ -104,7 +104,7 @@ replay: ## Replay a request: make replay REQ=req_...  (add DIFF=req_... to diff 
 
 feedback: ## Record feedback: make feedback REQ=req_... KIND=thumbs VALUE=-1 [COMMENT=...] [KEY=dedup-key]
 	@test -n "$(REQ)" || (echo 'usage: make feedback REQ=req_... KIND=thumbs VALUE=-1'; exit 2)
-	$(EXEC) api cairn feedback $(REQ) --kind $(or $(KIND),thumbs) --value $(or $(VALUE),1) \
+	@$(EXEC) api cairn feedback $(REQ) --kind $(or $(KIND),thumbs) --value $(or $(VALUE),1) \
 	  $(if $(COMMENT),--comment "$(COMMENT)",) $(if $(KEY),--dedup-key $(KEY),)
 
 eval: ## Run the golden set through /ask and write an EvalRun (SET=small)
